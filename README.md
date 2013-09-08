@@ -1,99 +1,212 @@
-# ResourceAccessor - This library is used to simplify access to protected or unprotected http resource
+# http_wrapper
+
+Simple wrapper around standard Net::HTTP library to simplify common http[s] tasks usage
 
 ## Installation
 
-Add this line to to your Gemfile:
+Add this line to your Gemfile:
 
-    gem "resource_accessor"
+    gem 'http_wrapper', '~> 2.0.0'
 
 And then execute:
 
     $ bundle
 
+Or install it manually:
+
+    $ gem install http_wrapper
+
+And require it in you code:
+
+```ruby
+require 'http_wrapper'
+```
+
 ## Usage
 
-Create accessor object:
+Create wrapper object:
 
 ```ruby
-require 'resource_accessor'
-
-accessor = ResourceAccessor.new
+http = HTTPWrapper.new
 ```
 
-If you want to access unprotected resource located at **some_url**:
+### Access unprotected resource located at **some_url**:
+
+Resource is redirecting? No problem! `http_wrapper` follows up to 10 sequential redirects (you cannot change that limit yet).
 
 ```ruby
-response = accessor.get_response :url => some_url
+response = http.get some_url
 ```
 
-If you want to get protected resource, first get a cookie and then access protected resource:
+### Access resource protected by form-based authentication:
+
+1. Post your credentials and get authentication cookie
+
+    ```ruby
+    # 'username' and 'password' fields are examples, it's just query parameters
+
+    # credentials as body params
+    cookie = http.post_and_get_cookie some_url, body: { username: 'iamjohn', password: '$uperS1kret' }
+    # - or - credentials as GET query params
+    cookie = http.post_and_get_cookie some_url, params: { username: 'iamjohn', password: '$uperS1kret' }
+    ```
+
+2. Get protected resource with provided cookie
+
+    ```ruby
+    response = http.get some_url, cookie: cookie
+    ```
+
+### Access resource protected by basic access authentication:
 
 ```ruby
-# 1. Get cookie
-
-cookie = accessor.get_cookie login_url, user_name, password
-
-# 2.a. Get protected resource through POST and post body as hash
-
-response = accessor.get_response :url => some_url, :method => :post, :cookie => cookie,
-                                 :body => some_hash
-
-# 2.b. Get protected resource through POST and post body as string
-
-response = accessor.get_response :url => some_url, :method => :post, :cookie => cookie,
-                                 :body => some_string
+response = http.get 'http://example.com', auth: { login: 'iamjohn', password: 'iamnotjohn' }
+# => http://iamjohn:iamnotjohn@example.com
 ```
 
-You have to specify HTTP method explicitly here (post).
+### Access resource mimicing AJAX
 
-If you want to get AJAX resource, add special header to the request or use special method:
+Add special header or use special method:
 
 ```ruby
-response1 = accessor.get_response {:url => some_url}, {'X-Requested-With' => 'XMLHttpRequest'}
-
-response2 = accessor.get_ajax_response :url => some_url
+response = http.get some_url, headers: {'X-Requested-With' => 'XMLHttpRequest'}
+# - or -
+response = http.get_ajax some_url
 ```
 
-If you want to get SOAP resource, same as before, add special header to the request or use special method:
+### Access SOAP resource
+
+Same as before, add special header or use special method:
 
 ```ruby
-response1 = accessor.get_response {:url => some_url}, {'SOAPAction' => 'someSoapOperation', 'Content-Type' => 'text/xml;charset=UTF-8'}
-
-response2 = accessor.get_soap_response :url => some_url
+response = http.get some_url, headers: {'SOAPAction' => 'someSoapOperation', 'Content-Type' => 'text/xml; charset=UTF-8'}
+# - or -
+response = http.get_soap some_url
 ```
 
-If you want to get JSON resource, same as before, add special header to the request or use special method:
+### Access JSON resource
+
+Same as before :)
 
 ```ruby
-response = accessor.get_response {:url => some_url}, {'Content-Type" => "application/json;charset=UTF-8'}
-
-response2 = accessor.get_json_response :url => some_url
+response = http.get some_url, headers: {'Content-Type' => 'application/json; charset=UTF-8'}
+# - or -
+response = http.get_json some_url
 ```
 
-If you want to provide additional parameters in GET call, use **query** parameter:
+### Access JSON resource mimicing AJAX
+
+Just use special method :) (which sets `X-Requested-With` and `Content-Type` headers for you)
 
 ```ruby
-response = accessor.get_response :url => some_url, :query => {:param1 => 'p1', :param2 => 'p2'}
+response = http.get_ajax_json some_url, some_params
 ```
 
-or
+Difficult to remember what goes after what: `get_ajax_json` or `get_json_ajax`?
+`http_wrapper` got you covered. They both work, use whatever variant you like better.
 
 ```ruby
-response = accessor.get_response :url => "#{some_url?param1=p1&param2=p2}"
+# the same as above
+response = http.get_json_ajax some_url, some_params
 ```
 
-You can setup timeout for your accessor object in milliseconds:
+### Provide additional query parameters
+
+Don't worry about escaping, `http_wrapper` got you covered here either.
 
 ```ruby
-accessor.timeout = 10000
+response = http.get 'http://www.google.com', params: {message: 'Hi! M&Ms!', user: 'iamjohn'}
+# => http://www.google.com/?message=Hi!%20M%26Ms!&user=iamjohn
 ```
 
-If you need to work over ssl enable certificate validation before the call:
+Don't worry about parameters that already in URL, they'll be merged.
 
 ```ruby
-accessor.validate_ssl_cert = true
-accessor.ca_file = 'your cert file location'
+response = http.get 'http://www.google.com/?q=test', params: {user: 'iamjohn'}
+# => http://www.google.com/?q=test&user=iamjohn
 ```
+
+### Set timeout for wrapper:
+
+```ruby
+http.timeout = 10000 # in milliseconds
+# - or - on instantiation
+http = HTTPWrapper.new timeout: 10000
+```
+
+### Work over SSL
+
+To work over SSL enable certificate validation before any calls:
+
+```ruby
+http.validate_ssl_cert = true
+http.ca_file = '/path/to/your/ca_file'
+# - or - on instantiation
+http = HTTPWrapper.new ca_file: '/path/to/your/ca_file', validate_ssl_cert: true
+```
+
+### POST, PUT and DELETE requests
+
+On each `get` method there are `post`, `put` and `delete` methods. Examples:
+
+```ruby
+http.post some_url, body: {user: 'iamjohn', password: 'secret'}
+# - or -
+http.put some_url, body: {user: 'iamjohn', password: 'secret'}
+# - or -
+http.delete some_url, params: {user: 'iamjohn'}
+```
+
+Default content type header for these requests is `application/x-www-form-urlencoded; charset=UTF-8`.
+
+So for `get_ajax` there are `post_ajax`, `put_ajax` and `delete_ajax`.
+
+For `get_soap` there are `post_soap`, `put_soap` and `delete_soap`.
+
+For `get_json` there are `post_json`, `put_json` and `delete_json`.
+
+And for `get_ajax_json`, there are `post_ajax_json`, `put_ajax_json` and `delete_ajax_json`.
+
+### Full params hash example
+
+```ruby
+{
+  # Request Headers
+  headers: {
+    'Content-Type' => 'text/html',
+    'X-Requested-With' => 'XMLHttpRequest',
+    'User-Agent' => 'Chrome v123'
+  },
+
+  # Query Parameters
+  params: {
+    user: 'iamjohn',
+    'user-stuff' => '123abc'
+  },
+
+  # Cookie
+  cookie: 'all cookies in one string',
+
+  # Basic authentication credentials
+  auth: {
+    login: 'iamjohn',
+    password: 'secret'
+  },
+
+  # Request body
+  body: 'as a string',
+  # - or -
+  body: {
+    as: 'a hash'
+  },
+
+  # Request method - :get, :post, :put, :delete
+  :method => :get
+}
+```
+
+Don't worry if you mistype root parameters key. `http_wrapper` checks root params keys and instantiation options keys.
+If any unknown options or parameters found, they raise the `UnknownParameterError` exception.
 
 ## Contributing
 
