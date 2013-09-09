@@ -11,8 +11,8 @@ rvm:
 gemfile: Gemfile.ci
 
 notifications:
-  recipients:
-    - leonid@svyatov.ru
+  recipients: leonid@svyatov.ru
+  on_failure: change
 
 matrix:
   allow_failures:
