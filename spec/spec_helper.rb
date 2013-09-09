@@ -1,7 +1,8 @@
 require 'rspec'
 require 'webmock/rspec'
 
-if defined? Coveralls
+if ENV['TRAVIS'] == 'true'
+  require 'coveralls'
   Coveralls.wear!
 end
 
