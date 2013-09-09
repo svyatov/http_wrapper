@@ -2,6 +2,8 @@
 
 Simple wrapper around standard Net::HTTP library to simplify common http[s] tasks usage
 
+[![Gem Version](https://badge.fury.io/rb/http_wrapper.png)](http://badge.fury.io/rb/http_wrapper)
+
 ## Installation
 
 Add this line to your Gemfile:
