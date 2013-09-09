@@ -27,6 +27,5 @@ module HTTPWrapperSpecHelpers
 end
 
 RSpec.configure do |config|
-  config.mock_with :mocha
   config.include HTTPWrapperSpecHelpers
 end
