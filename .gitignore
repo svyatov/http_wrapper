@@ -7,3 +7,4 @@ rdoc
 tmp
 .idea/
 coverage/
+Gemfile.lock
