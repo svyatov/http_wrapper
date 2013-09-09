@@ -8,7 +8,9 @@ Simple wrapper around standard Net::HTTP library to simplify common http[s] task
 
 Add this line to your Gemfile:
 
-    gem 'http_wrapper', '~> 2.0.0'
+```ruby
+gem 'http_wrapper', '~> 2.0.0'
+```
 
 And then execute:
 
