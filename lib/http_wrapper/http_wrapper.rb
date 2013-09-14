@@ -1,8 +1,5 @@
 require 'uri/common'
 require 'net/https'
-require_relative 'constants'
-require_relative 'errors'
-require_relative 'version'
 
 class HTTPWrapper
   attr_accessor :timeout, :ca_file, :validate_ssl_cert
