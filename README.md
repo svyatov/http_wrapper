@@ -55,7 +55,7 @@ response = http.get some_url
     # credentials as body params
     cookie = http.post_and_get_cookie some_url, body: { username: 'iamjohn', password: '$uperS1kret' }
     # - or - credentials as GET query params
-    cookie = http.post_and_get_cookie some_url, params: { username: 'iamjohn', password: '$uperS1kret' }
+    cookie = http.post_and_get_cookie some_url, query: { username: 'iamjohn', password: '$uperS1kret' }
     ```
 
 2. Get protected resource with provided cookie
