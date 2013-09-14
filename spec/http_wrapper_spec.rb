@@ -34,33 +34,35 @@ describe HTTPWrapper do
 
     context 'GET' do
       it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADERS::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPES::DEFAULT} }
+        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::DEFAULT} }
         stub_get sample_url, params
         subject.get sample_url
       end
 
       it 'should set content type if provided' do
-        params = { headers: {HTTPWrapper::HEADERS::CONTENT_TYPE => 'Custom Content Type'} }
+        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => 'Custom Content Type'} }
         stub_get sample_url, params
         subject.get sample_url, params
       end
 
       it 'should set proper header for JSON requests' do
-        params = { headers: {HTTPWrapper::HEADERS::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPES::JSON} }
+        params = { headers: HTTPWrapper::JSON_HEADER }
         stub_get sample_url, params
         subject.get_json sample_url
       end
 
       it 'should set proper header for AJAX requests' do
-        params = { headers: {HTTPWrapper::HEADERS::AJAX => HTTPWrapper::HEADERS::DEFAULT_AJAX_HEADER,
-                             HTTPWrapper::HEADERS::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPES::DEFAULT } }
+        params = {
+          headers: {
+            HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::DEFAULT
+          }.merge(HTTPWrapper::AJAX_HEADER)
+        }
         stub_get sample_url, params
         subject.get_ajax sample_url
       end
 
       it 'should set proper headers for AJAX-JSON requests' do
-        params = { headers: {HTTPWrapper::HEADERS::AJAX => HTTPWrapper::HEADERS::DEFAULT_AJAX_HEADER,
-                             HTTPWrapper::HEADERS::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPES::JSON } }
+        params = { headers: HTTPWrapper::AJAX_JSON_HEADER }
         stub_get sample_url, params
         subject.get_ajax_json sample_url
       end
@@ -71,14 +73,14 @@ describe HTTPWrapper do
       end
 
       it 'should set default user agent' do
-        params = { headers: {HTTPWrapper::HEADERS::USER_AGENT => HTTPWrapper::HEADERS::DEFAULT_USER_AGENT} }
+        params = { headers: {HTTPWrapper::HEADER::USER_AGENT => HTTPWrapper::USER_AGENT} }
         stub_get sample_url, params
         subject.get sample_url
       end
 
       it 'should change user agent if provided' do
         custom_user_agent = 'Mozilla v1.2.3'
-        params = { headers: {HTTPWrapper::HEADERS::USER_AGENT => custom_user_agent} }
+        params = { headers: {HTTPWrapper::HEADER::USER_AGENT => custom_user_agent} }
         stub_get sample_url, params
         subject.get sample_url, params
       end
@@ -113,7 +115,7 @@ describe HTTPWrapper do
 
     context 'POST' do
       it 'should set content type if provided' do
-        params = { headers: {HTTPWrapper::HEADERS::CONTENT_TYPE => 'Custom Content Type'} }
+        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => 'Custom Content Type'} }
         stub_post sample_url, params
         subject.post sample_url, params
       end
@@ -127,7 +129,7 @@ describe HTTPWrapper do
       end
 
       it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADERS::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPES::POST } }
+        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::POST } }
         stub_post sample_url, params
         subject.post sample_url
       end
@@ -135,7 +137,7 @@ describe HTTPWrapper do
 
     context 'PUT' do
       it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADERS::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPES::POST } }
+        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::POST } }
         stub_put sample_url, params
         subject.put sample_url
       end
@@ -143,7 +145,7 @@ describe HTTPWrapper do
 
     context 'DELETE' do
       it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADERS::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPES::POST } }
+        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::POST } }
         stub_delete sample_url, params
         subject.delete sample_url
       end

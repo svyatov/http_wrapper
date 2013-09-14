@@ -4,6 +4,8 @@ class HTTPWrapper
   KNOWN_PARAMS_KEYS = [:headers, :query, :cookie, :auth, :body].freeze
 
   class Request
+    attr_accessor :headers
+
     def initialize(url, method, params = {})
       validate_parameters params
 
@@ -12,7 +14,7 @@ class HTTPWrapper
       @headers  = params[:headers] || {}
       @query    = params[:query]   || {}
       @body     = params[:body]    || nil
-      @cookie   = params[:cookie]  || @headers[HEADERS::COOKIE] || nil
+      @cookie   = params[:cookie]  || @headers[HEADER::COOKIE] || nil
       @login    = params[:auth] && params[:auth].fetch(:login)
       @password = params[:auth] && params[:auth].fetch(:password)
 
@@ -30,9 +32,6 @@ class HTTPWrapper
     def create
       build_uri
       create_http_request
-      set_request_cookies
-      set_request_body
-      set_request_basic_auth
       @request
     end
 
@@ -47,10 +46,10 @@ class HTTPWrapper
     end
 
     def initialize_defaults
-      @headers[HEADERS::USER_AGENT] ||= HEADERS::DEFAULT_USER_AGENT
+      @headers[HEADER::USER_AGENT] ||= HTTPWrapper::USER_AGENT
       case @method
-        when :post, :put, :delete then @headers[HEADERS::CONTENT_TYPE] ||= CONTENT_TYPES::POST
-        else @headers[HEADERS::CONTENT_TYPE] ||= CONTENT_TYPES::DEFAULT
+        when :post, :put, :delete then @headers[HEADER::CONTENT_TYPE] ||= CONTENT_TYPE::POST
+        else @headers[HEADER::CONTENT_TYPE] ||= CONTENT_TYPE::DEFAULT
       end
     end
 
@@ -68,6 +67,9 @@ class HTTPWrapper
 
     def create_http_request
       @request = Net::HTTP.const_get(@method.to_s.capitalize).new @uri.request_uri, @headers
+      set_request_cookies
+      set_request_body
+      set_request_basic_auth
     end
 
     def set_request_body
