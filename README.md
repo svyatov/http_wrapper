@@ -12,7 +12,7 @@ Simple wrapper around standard Net::HTTP library to simplify common http[s] task
 Add this line to your Gemfile:
 
 ```ruby
-gem 'http_wrapper', '~> 2.0.0'
+gem 'http_wrapper', '~> 2.1.0'
 ```
 
 And then execute:
@@ -81,16 +81,6 @@ response = http.get some_url, headers: {'X-Requested-With' => 'XMLHttpRequest'}
 response = http.get_ajax some_url
 ```
 
-### Access SOAP resource
-
-Same as before, add special header or use special method:
-
-```ruby
-response = http.get some_url, headers: {'SOAPAction' => 'someSoapOperation', 'Content-Type' => 'text/xml; charset=UTF-8'}
-# - or -
-response = http.get_soap some_url
-```
-
 ### Access JSON resource
 
 Same as before :)
@@ -122,23 +112,23 @@ response = http.get_json_ajax some_url, some_params
 Don't worry about escaping, `http_wrapper` got you covered here either.
 
 ```ruby
-response = http.get 'http://www.google.com', params: {message: 'Hi! M&Ms!', user: 'iamjohn'}
+response = http.get 'http://www.google.com', query: {message: 'Hi! M&Ms!', user: 'iamjohn'}
 # => http://www.google.com/?message=Hi!%20M%26Ms!&user=iamjohn
 ```
 
 Don't worry about parameters that already in URL, they'll be merged.
 
 ```ruby
-response = http.get 'http://www.google.com/?q=test', params: {user: 'iamjohn'}
+response = http.get 'http://www.google.com/?q=test', query: {user: 'iamjohn'}
 # => http://www.google.com/?q=test&user=iamjohn
 ```
 
 ### Set timeout for wrapper:
 
 ```ruby
-http.timeout = 10000 # in milliseconds
+http.timeout = 15 # in seconds
 # - or - on instantiation
-http = HTTPWrapper.new timeout: 10000
+http = HTTPWrapper.new timeout: 15
 ```
 
 ### Work over SSL
@@ -161,7 +151,7 @@ http.post some_url, body: {user: 'iamjohn', password: 'secret'}
 # - or -
 http.put some_url, body: {user: 'iamjohn', password: 'secret'}
 # - or -
-http.delete some_url, params: {user: 'iamjohn'}
+http.delete some_url, query: {user: 'iamjohn'}
 ```
 
 Default content type header for these requests is `application/x-www-form-urlencoded; charset=UTF-8`.
@@ -186,7 +176,7 @@ And for `get_ajax_json`, there are `post_ajax_json`, `put_ajax_json` and `delete
   },
 
   # Query Parameters
-  params: {
+  query: {
     user: 'iamjohn',
     'user-stuff' => '123abc'
   },
@@ -205,14 +195,11 @@ And for `get_ajax_json`, there are `post_ajax_json`, `put_ajax_json` and `delete
   # - or -
   body: {
     as: 'a hash'
-  },
-
-  # Request method - :get, :post, :put, :delete
-  :method => :get
+  }
 }
 ```
 
-Don't worry if you mistype root parameters key. `http_wrapper` checks root params keys and instantiation options keys.
+Don't worry if you mistype root parameters key. `http_wrapper` checks root parameters keys and instantiation options keys.
 If any unknown options or parameters found, they raise the `UnknownParameterError` exception.
 
 ## Contributing

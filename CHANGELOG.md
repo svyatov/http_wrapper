@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.1.0
+
+* massive refactoring
+* `soap` methods removed due to rare usage
+* `:method` key removed from params
+* `:params` key changed to `:query`
+
+    ```ruby
+    http.get some_url, query: { user_id: 1, text: 'abcdefg' }
+    ```
+
+* fixed bug with timeout - it should be set in seconds, not microseconds
+
 ## v2.0.0
 
 * Gem rewritten completely and renamed to 'http_wrapper'

@@ -1,16 +1,17 @@
 class HTTPWrapper
-  KNOWN_OPTIONS_KEYS   = [:timeout, :ca_file, :validate_ssl_cert].freeze
-  KNOWN_PARAMS_KEYS    = [:headers, :params, :cookie, :auth, :body, :method].freeze
+  module HEADERS
+    CONTENT_TYPE = 'Content-Type'.freeze
+    USER_AGENT   = 'User-Agent'.freeze
+    COOKIE       = 'Cookie'.freeze
+    AJAX         = 'X-Requested-With'.freeze
 
-  HEADER_CONTENT_TYPE  = 'Content-Type'.freeze
+    DEFAULT_USER_AGENT  = "HTTPWrapper/#{HTTPWrapper::VERSION}; Ruby/#{RUBY_VERSION}".freeze
+    DEFAULT_AJAX_HEADER = 'XMLHttpRequest'.freeze
+  end
 
-  DEFAULT_CONTENT_TYPE = 'text/xml; charset=UTF-8'.freeze
-  JSON_CONTENT_TYPE    = 'application/json; charset=UTF-8'.freeze
-  POST_CONTENT_TYPE    = 'application/x-www-form-urlencoded; charset=UTF-8'.freeze
-
-  HEADER_USER_AGENT    = 'User-Agent'.freeze
-  HEADER_COOKIE        = 'Cookie'.freeze
-
-  HEADER_AJAX          = 'X-Requested-With'.freeze
-  HEADER_AJAX_VALUE    = 'XMLHttpRequest'.freeze
+  module CONTENT_TYPES
+    DEFAULT = 'text/xml; charset=UTF-8'.freeze
+    JSON    = 'application/json; charset=UTF-8'.freeze
+    POST    = 'application/x-www-form-urlencoded; charset=UTF-8'.freeze
+  end
 end
