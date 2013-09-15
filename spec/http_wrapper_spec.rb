@@ -55,7 +55,7 @@ describe HTTPWrapper do
 
       it 'should use logger' do
         require 'logger'
-        logger = Logger.new $stdout
+        logger = Logger.new StringIO.new
         logger.should_receive(:<<).at_least(:once)
         subject.logger = logger
 
