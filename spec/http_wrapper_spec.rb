@@ -85,6 +85,8 @@ describe HTTPWrapper do
         params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => 'Custom Content Type'} }
         stub_get sample_url, params
         subject.get sample_url, params
+        subject.get sample_url, content_type: 'Custom Content Type'
+        subject.get sample_url, params.merge({content_type: 'Should Be Overwritten'})
       end
 
       it 'should set proper header for JSON requests' do
@@ -125,6 +127,28 @@ describe HTTPWrapper do
         params = { headers: {HTTPWrapper::HEADER::USER_AGENT => custom_user_agent} }
         stub_get sample_url, params
         subject.get sample_url, params
+
+        subject.get sample_url, user_agent: custom_user_agent
+
+        subject.user_agent = custom_user_agent
+        subject.get sample_url
+
+        expect do
+          subject.get sample_url, user_agent: 'abracadabra'
+        end.to raise_error WebMock::NetConnectNotAllowedError
+
+        expect do
+          subject.user_agent = 'another test'
+          subject.get sample_url
+        end.to raise_error WebMock::NetConnectNotAllowedError
+      end
+
+      it 'should precedence header user agent before params' do
+        params = { headers: {HTTPWrapper::HEADER::USER_AGENT => 'TestUserAgent'} }
+        stub_get sample_url, params
+
+        subject.user_agent = 'Should Be Overwritten'
+        subject.get sample_url, params
       end
 
       it 'should send cookie if provided' do
@@ -143,6 +167,11 @@ describe HTTPWrapper do
       it 'should merge query parameters and params should take precedence' do
         stub_get sample_url + '/?text=edf&time=16:44&user=test'
         subject.get(sample_url + '/?user=test&text=abc', query: {time: '16:44', text: 'edf'})
+      end
+
+      it 'should equally treat header as string and header as symbol' do
+        stub_get sample_url, { headers: {'Content-Type' => 'Some Content Type'} }
+        subject.get sample_url, { headers: {content_type: 'Some Content Type'} }
       end
     end
 

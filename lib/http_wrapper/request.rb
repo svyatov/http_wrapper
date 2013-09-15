@@ -1,7 +1,7 @@
 require 'uri/common'
 
 class HTTPWrapper
-  KNOWN_PARAMS_KEYS = [:headers, :query, :cookie, :auth, :body].freeze
+  KNOWN_PARAMS_KEYS = [:headers, :query, :cookie, :auth, :body, :user_agent, :content_type].freeze
 
   class Request
     attr_reader :uri
@@ -19,7 +19,10 @@ class HTTPWrapper
       @login    = params[:auth] && params[:auth].fetch(:login)
       @password = params[:auth] && params[:auth].fetch(:password)
 
-      initialize_defaults
+      @user_agent   = params[:user_agent]
+      @content_type = params[:content_type]
+
+      initialize_headers
     end
 
     def uri=(url)
@@ -28,7 +31,8 @@ class HTTPWrapper
     end
 
     def perform_using(connection)
-      rebuild_uri
+      rebuild_uri_query_params
+      convert_symbol_headers_to_string
       create_http_request
       connection.request @request
     end
@@ -43,15 +47,15 @@ class HTTPWrapper
       end
     end
 
-    def initialize_defaults
-      @headers[HEADER::USER_AGENT] ||= HTTPWrapper::USER_AGENT
+    def initialize_headers
+      @headers[HEADER::USER_AGENT] ||= @user_agent
       case @method
-        when :post, :put, :delete then @headers[HEADER::CONTENT_TYPE] ||= CONTENT_TYPE::POST
-        else @headers[HEADER::CONTENT_TYPE] ||= CONTENT_TYPE::DEFAULT
+        when :post, :put, :delete then @headers[HEADER::CONTENT_TYPE] ||= @content_type || CONTENT_TYPE::POST
+        else @headers[HEADER::CONTENT_TYPE] ||= @content_type || CONTENT_TYPE::DEFAULT
       end
     end
 
-    def rebuild_uri
+    def rebuild_uri_query_params
       return unless @query.size > 0
 
       query = if @uri.query
@@ -61,6 +65,12 @@ class HTTPWrapper
               end
 
       @uri.query = URI.encode_www_form query
+    end
+
+    def convert_symbol_headers_to_string
+      @headers.keys.select{|key| key.is_a? Symbol}.each do |key|
+        @headers[key.to_s.gsub(/_/, '-').capitalize] = @headers.delete(key)
+      end
     end
 
     def create_http_request

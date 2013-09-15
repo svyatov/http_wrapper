@@ -88,9 +88,11 @@ response = http.get 'http://example.com', auth: { login: 'iamjohn', password: 'i
 Add special header or use special method:
 
 ```ruby
-response = http.get some_url, headers: {'X-Requested-With' => 'XMLHttpRequest'}
-# - or -
 response = http.get_ajax some_url
+# - or -
+response = http.get some_url, headers: {x_requested_with: 'XMLHttpRequest'}
+# - or -
+response = http.get some_url, headers: {'X-Requested-With' => 'XMLHttpRequest'}
 ```
 
 ### Access JSON resource
@@ -98,9 +100,13 @@ response = http.get_ajax some_url
 Same as before :)
 
 ```ruby
-response = http.get some_url, headers: {'Content-Type' => 'application/json; charset=UTF-8'}
-# - or -
 response = http.get_json some_url
+# - or -
+response = http.get some_url, content_type: 'application/json; charset=UTF-8'
+# - or -
+response = http.get some_url, headers: {content_type: 'application/json; charset=UTF-8'}
+# - or -
+response = http.get some_url, headers: {'Content-Type' => 'application/json; charset=UTF-8'}
 ```
 
 ### Access JSON resource mimicing AJAX
@@ -191,6 +197,20 @@ For `get_json` there are `post_json`, `put_json` and `delete_json`.
 
 And for `get_ajax_json`, there are `post_ajax_json`, `put_ajax_json` and `delete_ajax_json`.
 
+### Change User Agent
+
+```ruby
+http = HTTWrapper.new user_agent: 'custom user agent'
+# - or -
+http.user_agent = 'custom user agent'
+http.get sample_url
+# - or -
+http.get sample_url, user_agent: 'custom user agent'
+# - or -
+http.get sample_url, headers: { user_agent: 'custom user agent' }
+# the last one always replaces other definitions
+```
+
 ### Full params hash example
 
 ```ruby
@@ -199,7 +219,11 @@ And for `get_ajax_json`, there are `post_ajax_json`, `put_ajax_json` and `delete
   headers: {
     'Content-Type' => 'text/html',
     'X-Requested-With' => 'XMLHttpRequest',
-    'User-Agent' => 'Chrome v123'
+    'User-Agent' => 'Chrome v123',
+    # - or - use symbols
+    content_type: 'text/xml',
+    x_requested_with: 'XMLHttpRequest',
+    user_agent: 'Chrome v123'
   },
 
   # Query Parameters
@@ -222,7 +246,13 @@ And for `get_ajax_json`, there are `post_ajax_json`, `put_ajax_json` and `delete
   # - or -
   body: {
     as: 'a hash'
-  }
+  },
+
+  # Shortcut for User-Agent header (headers hash takes precedence)
+  user_agent: 'UserAgent v1.2.3',
+
+  # Shortcut for Content-Type header (headers hash takes precedence)
+  content_type: 'text/xml'
 }
 ```
 

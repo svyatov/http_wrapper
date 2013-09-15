@@ -2,6 +2,31 @@
 
 ## v2.1.0
 
+* added `:user_agent` and `:content_type` shortcuts
+
+    ```ruby
+    # you can specify now user agent like so:
+    http = HTTWrapper.new user_agent: 'custom user agent'
+    # - or -
+    http.user_agent = 'custom user agent'
+    http.get sample_url
+    # - or -
+    http.get sample_url, user_agent: 'custom user agent'
+    ```
+
+    ```ruby
+    # you can specify now content type like so:
+    http.get sample_url, content_type: 'text/html'
+    ```
+
+* added ability to specify headers as symbols
+
+    ```ruby
+    http.get some_url, headers: {content_type: 'application/json; charset=UTF-8'}
+    # - the same as -
+    http.get some_url, headers: {'Content-Type' => 'application/json; charset=UTF-8'}
+    ```
+
 * added ability to prefix urls without scheme with default http scheme
 
     ```ruby

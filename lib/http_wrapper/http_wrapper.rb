@@ -1,9 +1,9 @@
 require 'net/https'
 
 class HTTPWrapper
-  KNOWN_OPTIONS_KEYS = [:timeout, :verify_cert, :logger, :max_redirects].freeze
+  KNOWN_OPTIONS_KEYS = [:timeout, :verify_cert, :logger, :max_redirects, :user_agent].freeze
 
-  attr_accessor :timeout, :verify_cert, :logger, :max_redirects
+  attr_accessor :timeout, :verify_cert, :logger, :max_redirects, :user_agent
 
   def initialize(options = {})
     unknown_options = options.keys - KNOWN_OPTIONS_KEYS
@@ -16,10 +16,12 @@ class HTTPWrapper
     @verify_cert   = options.fetch(:verify_cert) { true }
     @logger        = options.fetch(:logger) { nil }
     @max_redirects = options.fetch(:max_redirects) { 10 }
+    @user_agent    = options.fetch(:user_agent) { USER_AGENT }
   end
 
   [:get, :post, :put, :delete].each do |method|
     define_method method do |url, params = {}|
+      params[:user_agent] ||= @user_agent
       get_response Request.new(url, method, params)
     end
 
