@@ -41,6 +41,8 @@ http = HTTPWrapper.new
 
 ```ruby
 response = http.get some_url
+
+# response is always an instance of Net::HTTPResponse
 ```
 
 Resource is redirecting? No problem! `http_wrapper` follows up to 10 sequential redirects by default.
