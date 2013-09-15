@@ -39,10 +39,22 @@ http = HTTPWrapper.new
 
 ### Access unprotected resource located at **some_url**:
 
-Resource is redirecting? No problem! `http_wrapper` follows up to 10 sequential redirects (you cannot change that limit yet).
-
 ```ruby
 response = http.get some_url
+```
+
+Resource is redirecting? No problem! `http_wrapper` follows up to 10 sequential redirects by default.
+But you can specify your own limits.
+
+```ruby
+http.max_redirects = 5
+response = http.get some_url
+```
+
+Url doesn't have scheme? `http_wrapper` prefixes url with `http://` if scheme is missing.
+
+```ruby
+http.get 'example.com' # will correctly request 'http://example.com'
 ```
 
 ### Access resource protected by form-based authentication:
@@ -123,23 +135,38 @@ response = http.get 'http://www.google.com/?q=test', query: {user: 'iamjohn'}
 # => http://www.google.com/?q=test&user=iamjohn
 ```
 
-### Set timeout for wrapper:
+### Set timeout
+
+By default timeout is set to 10 seconds.
 
 ```ruby
-http.timeout = 15 # in seconds
+http.timeout = 5 # in seconds
 # - or - on instantiation
-http = HTTPWrapper.new timeout: 15
+http = HTTPWrapper.new timeout: 5
+```
+
+### Set logger
+
+If you need to debug your requests, it's as simple as to say `http_wrapper` where to output debug information.
+
+```ruby
+logger = Logger.new '/path/to/log_file'
+http.logger = logger
+# - or -
+http = HTTPWrapper.new logger: $stdout
+# - to switch logger off -
+http.logger = nil
 ```
 
 ### Work over SSL
 
-To work over SSL enable certificate validation before any calls:
+`http_wrapper` works with SSL out of the box and by default verifying domain SSL certificate.
+But you can easily turn verification off if needed.
 
 ```ruby
-http.validate_ssl_cert = true
-http.ca_file = '/path/to/your/ca_file'
+http.verify_cert = false
 # - or - on instantiation
-http = HTTPWrapper.new ca_file: '/path/to/your/ca_file', validate_ssl_cert: true
+http = HTTPWrapper.new verify_cert: false
 ```
 
 ### POST, PUT and DELETE requests

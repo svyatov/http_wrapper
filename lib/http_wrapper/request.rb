@@ -4,12 +4,13 @@ class HTTPWrapper
   KNOWN_PARAMS_KEYS = [:headers, :query, :cookie, :auth, :body].freeze
 
   class Request
+    attr_reader :uri
     attr_accessor :headers
 
     def initialize(url, method, params = {})
       validate_parameters params
 
-      self.url  = url
+      self.uri  = url
       @method   = method
       @headers  = params[:headers] || {}
       @query    = params[:query]   || {}
@@ -21,18 +22,15 @@ class HTTPWrapper
       initialize_defaults
     end
 
-    def url
-      @uri
-    end
-
-    def url=(url)
+    def uri=(url)
+      url = "http://#{url}" unless url =~ /^https?:\/\//
       @uri = URI.parse url
     end
 
-    def create
-      build_uri
+    def perform_using(connection)
+      rebuild_uri
       create_http_request
-      @request
+      connection.request @request
     end
 
     private
@@ -53,7 +51,7 @@ class HTTPWrapper
       end
     end
 
-    def build_uri
+    def rebuild_uri
       return unless @query.size > 0
 
       query = if @uri.query

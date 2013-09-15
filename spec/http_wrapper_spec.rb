@@ -20,19 +20,61 @@ describe HTTPWrapper do
     let(:sample_url) { 'http://example.com' }
     let(:sample_url_with_basic_auth) { "http://#{basic_auth_login}:#{basic_auth_password}@example.com" }
 
-    it 'should raise UnknownParameterError if initial options key is unknown' do
-      expect do
-        HTTPWrapper.new unknown_option: 'test', maybe_this_known: '?'
-      end.to raise_error HTTPWrapper::UnknownParameterError, 'Unknown options: unknown_option, maybe_this_known'
-    end
+    context 'Options' do
+      it 'should raise UnknownParameterError if initial options key is unknown' do
+        expect do
+          HTTPWrapper.new unknown_option: 'test', maybe_this_known: '?'
+        end.to raise_error HTTPWrapper::UnknownParameterError, 'Unknown options: unknown_option, maybe_this_known'
+      end
 
-    it 'should raise UnknownParameterError if params key is unknown' do
-      expect do
-        subject.get sample_url, unknown_param_key: 'test', another_param_key: 'wow'
-      end.to raise_error HTTPWrapper::UnknownParameterError, 'Unknown parameters: unknown_param_key, another_param_key'
+      it 'should raise UnknownParameterError if params key is unknown' do
+        expect do
+          subject.get sample_url, unknown_param_key: 'test', another_param_key: 'wow'
+        end.to raise_error HTTPWrapper::UnknownParameterError, 'Unknown parameters: unknown_param_key, another_param_key'
+      end
+
+      it 'should follow redirects no more then 10 times by default' do
+        stub_redirects sample_url, 9
+        response = subject.get sample_url
+        response.code.should eql '200'
+
+        stub_redirects sample_url, 10
+        expect { subject.get sample_url }.to raise_error HTTPWrapper::TooManyRedirectsError, 'Too many redirects!'
+      end
+
+      it 'should follow redirects no more times then specified' do
+        subject.max_redirects = 5
+
+        stub_redirects sample_url, 4
+        response = subject.get sample_url
+        response.code.should eql '200'
+
+        stub_redirects sample_url, 5
+        expect { subject.get sample_url }.to raise_error HTTPWrapper::TooManyRedirectsError, 'Too many redirects!'
+      end
+
+      it 'should use logger' do
+        require 'logger'
+        logger = Logger.new $stdout
+        logger.should_receive(:<<).at_least(:once)
+        subject.logger = logger
+
+        WebMock.allow_net_connect!
+        begin
+          subject.get 'localhost'
+        rescue
+          # NOOP, rescue from "connection refused" and such
+        end
+        WebMock.disable_net_connect!
+      end
     end
 
     context 'GET' do
+      it 'should add http uri scheme if missing' do
+        stub_get sample_url
+        subject.get sample_url.gsub(/^http:\/\//, '')
+      end
+
       it 'should hit provided url with default content type' do
         params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::DEFAULT} }
         stub_get sample_url, params
@@ -96,15 +138,6 @@ describe HTTPWrapper do
       it 'should hit provided url with basic auth' do
         stub_get sample_url_with_basic_auth
         subject.get sample_url, auth: {login: basic_auth_login, password: basic_auth_password}
-      end
-
-      it 'should follow redirects no more then 10 times' do
-        stub_redirects sample_url, 9
-        response = subject.get sample_url
-        response.code.should eql '200'
-
-        stub_redirects sample_url, 10
-        expect { subject.get sample_url }.to raise_error HTTPWrapper::TooManyRedirectsError, 'Too many redirects!'
       end
 
       it 'should merge query parameters and params should take precedence' do

@@ -2,7 +2,26 @@
 
 ## v2.1.0
 
+* added ability to prefix urls without scheme with default http scheme
+
+    ```ruby
+    http.get 'example.com'
+    # will correctly request http://example.com
+    ```
+
+* added `:max_redirects` option to specify redirect following limits
+* added `:logger` option
+
+    ```ruby
+    log = Logger.new
+    http = HTTPWrapper.new logger: log
+    - or -
+    http.logger = $stdout
+    ```
+
 * massive refactoring
+* `:ca_file` option removed
+* `:validate_ssl_cert` option renamed to `:verify_cert`
 * `soap` methods removed due to rare usage
 * `:method` key removed from params
 * `:params` key changed to `:query`
