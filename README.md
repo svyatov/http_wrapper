@@ -1,6 +1,6 @@
 # http_wrapper
 
-Simple wrapper around standard Net::HTTP library to simplify common http[s] tasks usage
+Simple wrapper around standard Net::HTTP library
 
 [![Gem Version](https://badge.fury.io/rb/http_wrapper.png)](http://badge.fury.io/rb/http_wrapper)
 [![Build Status](https://travis-ci.org/Svyatov/http_wrapper.png)](https://travis-ci.org/Svyatov/http_wrapper)
