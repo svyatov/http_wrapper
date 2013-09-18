@@ -1,5 +1,6 @@
 $LOAD_PATH.unshift File.expand_path('lib', File.dirname(__FILE__))
 
+require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 
 task :default => :spec
