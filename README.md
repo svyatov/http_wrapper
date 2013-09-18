@@ -243,8 +243,14 @@ http.get sample_url, headers: { user_agent: 'custom user agent' }
 ### Perform own custom Net::HTTP requests
 
 ```ruby
-request = Net::HTTP::Head.new URI('http://example.com')
-http.execute request
+uri = URI 'http://example.com'
+
+# Ruby 2.0.0
+request = Net::HTTP::Head.new uri
+# Ruby 1.9.3
+request = Net::HTTP::Head.new uri.request_uri
+
+http.execute request, uri
 ```
 
 ### Full params hash example

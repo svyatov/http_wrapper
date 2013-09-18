@@ -76,7 +76,9 @@ class HTTPWrapper
     end
 
     def create_http_request
-      @request = @method_class.new @uri, @headers
+      # Ruby v1.9.3 doesn't understand full URI object, it needs just path :(
+      uri = RUBY_VERSION =~ /\A2/ ? @uri : @uri.request_uri
+      @request = @method_class.new uri, @headers
       set_cookies
       set_body
       set_basic_auth

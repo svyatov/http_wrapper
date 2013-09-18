@@ -6,8 +6,14 @@
 
     ```ruby
     http = HTTPWrapper.new
-    request = Net::HTTP::Head.new URI('http://example.com')
-    http.execute request
+    uri = URI 'http://example.com'
+
+    # Ruby v2.0.0
+    request = Net::HTTP::Head.new uri
+    # Ruby v1.9.3
+    request = Net::HTTP::Head.new uri.request_uri
+
+    http.execute request, uri
     ```
 
 * added ability to upload files with `multipart/form-data` content type

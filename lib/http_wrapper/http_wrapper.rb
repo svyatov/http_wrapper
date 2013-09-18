@@ -37,8 +37,8 @@ class HTTPWrapper
     response.response['set-cookie']
   end
 
-  def execute(request)
-    connection = create_connection request.uri
+  def execute(request, uri)
+    connection = create_connection uri
     connection.request request
   end
 
@@ -55,7 +55,7 @@ class HTTPWrapper
   def get_response(request, redirects_limit = @max_redirects)
     raise TooManyRedirectsError.new 'Too many redirects!' if redirects_limit == 0
 
-    response = execute request.create
+    response = execute request.create, request.uri
 
     if response.kind_of? Net::HTTPRedirection
       request.uri = response['location']

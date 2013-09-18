@@ -239,8 +239,15 @@ describe HTTPWrapper do
       it 'should perform request for custom Net::HTTP request instance' do
         stub_request :head, sample_url
         uri = URI sample_url
-        request = Net::HTTP::Head.new uri
-        subject.execute request
+
+        if RUBY_VERSION =~ /\A2/
+          request = Net::HTTP::Head.new uri
+          subject.execute request, request.uri
+        else
+          # Ruby v1.9.3 doesn't understand full URI object, it needs just path :(
+          request = Net::HTTP::Head.new uri.request_uri
+          subject.execute request, uri
+        end
       end
     end
   end
