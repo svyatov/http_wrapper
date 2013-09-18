@@ -6,11 +6,7 @@ class HTTPWrapper
   attr_accessor :timeout, :verify_cert, :logger, :max_redirects, :user_agent
 
   def initialize(options = {})
-    unknown_options = options.keys - KNOWN_OPTIONS_KEYS
-
-    if unknown_options.length > 0
-      raise UnknownParameterError.new "Unknown options: #{unknown_options.join(', ')}"
-    end
+    validate_options options
 
     @timeout       = options.fetch(:timeout) { 10 }
     @verify_cert   = options.fetch(:verify_cert) { true }
@@ -47,6 +43,14 @@ class HTTPWrapper
   end
 
   private
+
+  def validate_options(options)
+    unknown_options = options.keys - KNOWN_OPTIONS_KEYS
+
+    if unknown_options.length > 0
+      raise UnknownParameterError.new "Unknown options: #{unknown_options.join(', ')}"
+    end
+  end
 
   def get_response(request, redirects_limit = @max_redirects)
     raise TooManyRedirectsError.new 'Too many redirects!' if redirects_limit == 0
