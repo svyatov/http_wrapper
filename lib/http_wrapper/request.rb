@@ -1,40 +1,47 @@
 require 'uri/common'
 
 class HTTPWrapper
-  KNOWN_PARAMS_KEYS = [:headers, :query, :cookie, :auth, :body, :user_agent, :content_type].freeze
-
   class Request
-    attr_reader :uri
-    attr_accessor :headers
+    KNOWN_PARAMS_KEYS = [:headers, :query, :cookie, :auth, :body, :user_agent, :content_type, :multipart].freeze
 
     def initialize(url, method, params = {})
       validate_parameters params
 
       self.uri  = url
-      @method   = method
+
       @headers  = params[:headers] || {}
       @query    = params[:query]   || {}
-      @body     = params[:body]    || nil
-      @cookie   = params[:cookie]  || @headers[HEADER::COOKIE] || nil
+      @cookie   = params[:cookie]  || @headers[HEADER::COOKIE]
       @login    = params[:auth] && params[:auth].fetch(:login)
       @password = params[:auth] && params[:auth].fetch(:password)
 
+      @method       = method
+      @method_class = Net::HTTP.const_get(method.to_s.capitalize)
+
+      @body         = params[:body]
       @user_agent   = params[:user_agent]
       @content_type = params[:content_type]
+
+      @multipart_data = params[:multipart] || []
 
       initialize_headers
     end
 
+    attr_reader :uri
+
     def uri=(url)
-      url = "http://#{url}" unless url =~ /^https?:\/\//
-      @uri = URI.parse url
+      if url.is_a? URI
+        @uri = url
+      else
+        url = "http://#{url}" unless url =~ /\Ahttps?:\/\//
+        @uri = URI.parse url
+      end
     end
 
-    def perform_using(connection)
+    def create
       rebuild_uri_query_params
       convert_symbol_headers_to_string
       create_http_request
-      connection.request @request
     end
 
     private
@@ -50,57 +57,63 @@ class HTTPWrapper
     def initialize_headers
       @headers[HEADER::USER_AGENT] ||= @user_agent
       case @method
-        when :post, :put, :delete then @headers[HEADER::CONTENT_TYPE] ||= @content_type || CONTENT_TYPE::POST
-        else @headers[HEADER::CONTENT_TYPE] ||= @content_type || CONTENT_TYPE::DEFAULT
+        when :post, :put then @headers[HEADER::CONTENT_TYPE] ||= (@content_type || CONTENT_TYPE::POST)
+        else @headers[HEADER::CONTENT_TYPE] ||= (@content_type || CONTENT_TYPE::DEFAULT)
       end
     end
 
     def rebuild_uri_query_params
       return unless @query.size > 0
-
-      query = if @uri.query
-                query_to_hash(@uri.query).merge(@query)
-              else
-                @query
-              end
-
+      query = @uri.query ? query_to_hash(@uri.query).merge(@query) : @query
       @uri.query = URI.encode_www_form query
     end
 
     def convert_symbol_headers_to_string
       @headers.keys.select{|key| key.is_a? Symbol}.each do |key|
-        @headers[key.to_s.gsub(/_/, '-').capitalize] = @headers.delete(key)
+        str_key = key.to_s.gsub(/_/, '-').capitalize
+        @headers[str_key] = @headers.delete key
       end
     end
 
     def create_http_request
-      @request = Net::HTTP.const_get(@method.to_s.capitalize).new @uri.request_uri, @headers
-      set_request_cookies
-      set_request_body
-      set_request_basic_auth
+      @request = @method_class.new @uri, @headers
+      set_cookies
+      set_body
+      set_basic_auth
+      @request
     end
 
-    def set_request_body
-      return unless @request.class::REQUEST_HAS_BODY && @body
-      if @body.kind_of? Hash
-        @request.set_form_data(@body)
-      else
-        @request.body = @body
+    def set_body
+      return unless @request.request_body_permitted?
+      if @multipart_data.length > 0
+        convert_body_to_multipart_data if @body
+        @request.set_form @multipart_data, CONTENT_TYPE::MULTIPART
+      elsif @body
+        @request.body = @body.is_a?(Hash) ? hash_to_query(@body) : @body
       end
     end
 
-    def set_request_basic_auth
+    def set_basic_auth
       return unless @login
       @request.basic_auth @login, @password
     end
 
-    def set_request_cookies
+    def set_cookies
       return unless @cookie
       @request['Cookie'] = @cookie
     end
 
+    def convert_body_to_multipart_data
+      @body = query_to_hash(@body) unless @body.kind_of? Hash
+      @body.each{|key, value| @multipart_data << [key.to_s, value.to_s]}
+    end
+
     def query_to_hash(query)
       Hash[URI.decode_www_form query]
+    end
+
+    def hash_to_query(hash)
+      URI.encode_www_form hash
     end
   end
 end

@@ -72,7 +72,7 @@ describe HTTPWrapper do
     context 'GET' do
       it 'should add http uri scheme if missing' do
         stub_get sample_url
-        subject.get sample_url.gsub(/^http:\/\//, '')
+        subject.get sample_url.gsub(/\Ahttp:\/\//, '')
       end
 
       it 'should hit provided url with default content type' do
@@ -195,6 +195,28 @@ describe HTTPWrapper do
         stub_post sample_url, params
         subject.post sample_url
       end
+
+      it 'should set all possible parameters correctly' do
+        stub_request(:post, 'http://user:passw@example.com/?a=b&c=d').
+            with(body: {
+            e: 'f',
+            g: 'k'
+        },
+                 headers: {
+                     'Content-Type' => 'Custom content type',
+                     'User-Agent' => 'Custom user agent',
+                     'Cookie' => 'cookie',
+                     'X-Requested-With' => 'XMLHttpRequest'
+                 })
+
+        subject.post sample_url, content_type: 'Custom content type',
+                     user_agent: 'Custom user agent',
+                     headers: {x_requested_with: 'XMLHttpRequest'},
+                     query: {a: 'b', c: 'd'},
+                     body: {e: 'f', g: 'k'},
+                     auth: {login: 'user', password: 'passw'},
+                     cookie: 'cookie'
+      end
     end
 
     context 'PUT' do
@@ -207,9 +229,18 @@ describe HTTPWrapper do
 
     context 'DELETE' do
       it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::POST } }
+        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::DEFAULT } }
         stub_delete sample_url, params
         subject.delete sample_url
+      end
+    end
+
+    context 'Custom request instance' do
+      it 'should perform request for custom Net::HTTP request instance' do
+        stub_request :head, sample_url
+        uri = URI sample_url
+        request = Net::HTTP::Head.new uri
+        subject.execute request
       end
     end
   end

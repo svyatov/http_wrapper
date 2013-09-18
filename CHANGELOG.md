@@ -2,6 +2,38 @@
 
 ## v2.1.0
 
+* added ability to perform custom `Net::HTTP` requests
+
+    ```ruby
+    http = HTTPWrapper.new
+    request = Net::HTTP::Head.new URI('http://example.com')
+    http.execute request
+    ```
+
+* added ability to upload files with `multipart/form-data` content type
+
+    ```ruby
+    http = HTTPWrapper.new
+    params = {
+      multipart: [
+        # ['file input field name', 'File instance or string', {filename: 'itsfile.jpg', content_type: '...'}]
+        # last element is optional
+        ['user_pic', File.open('user_pic.jpg')],
+        ['user_photo', File.read('user_photo.jpg'), {filename: 'photo.jpg'}],
+        # you can also specify other parameters
+        ['user_name', 'john griffin']
+      ],
+      # or you can specify other parameters in body section
+      # it will be merged with multipart data
+      body: {
+        user_age: 25
+      }
+    }
+    response = http.post some_url, params
+    ```
+
+* fixed incorrect content type for `DELETE` request
+* default content type changed to `text/html`
 * added `:user_agent` and `:content_type` shortcuts
 
     ```ruby
@@ -22,12 +54,12 @@
 * added ability to specify headers as symbols
 
     ```ruby
-    http.get some_url, headers: {content_type: 'application/json; charset=UTF-8'}
+    http.get some_url, headers: {x_requested_with: 'XMLHttpRequest'}
     # - the same as -
-    http.get some_url, headers: {'Content-Type' => 'application/json; charset=UTF-8'}
+    http.get some_url, headers: {'X-Requested-With' => 'XMLHttpRequest'}
     ```
 
-* added ability to prefix urls without scheme with default http scheme
+* added ability to fix urls without scheme with default http scheme
 
     ```ruby
     http.get 'example.com'

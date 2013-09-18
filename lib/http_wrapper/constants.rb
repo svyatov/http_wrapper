@@ -7,9 +7,10 @@ class HTTPWrapper
   end
 
   module CONTENT_TYPE
-    DEFAULT = 'text/xml; charset=UTF-8'.freeze
-    JSON    = 'application/json; charset=UTF-8'.freeze
-    POST    = 'application/x-www-form-urlencoded; charset=UTF-8'.freeze
+    DEFAULT   = 'text/html; charset=UTF-8'.freeze
+    JSON      = 'application/json; charset=UTF-8'.freeze
+    POST      = 'application/x-www-form-urlencoded'.freeze
+    MULTIPART = 'multipart/form-data'.freeze
   end
 
   USER_AGENT  = "HTTPWrapper/#{HTTPWrapper::VERSION}; Ruby/#{RUBY_VERSION}".freeze

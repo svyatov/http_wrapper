@@ -7,6 +7,8 @@ Simple wrapper around standard Net::HTTP library
 [![Dependency Status](https://gemnasium.com/Svyatov/http_wrapper.png)](https://gemnasium.com/Svyatov/http_wrapper)
 [![Coverage Status](https://coveralls.io/repos/Svyatov/http_wrapper/badge.png)](https://coveralls.io/r/Svyatov/http_wrapper)
 
+---
+
 ## Installation
 
 Add this line to your Gemfile:
@@ -143,6 +145,30 @@ response = http.get 'http://www.google.com/?q=test', query: {user: 'iamjohn'}
 # => http://www.google.com/?q=test&user=iamjohn
 ```
 
+### Files upload
+
+You can easily upload any number of files with `multipart/form-data` content type.
+
+```ruby
+http = HTTPWrapper.new
+params = {
+  multipart: [
+    # ['file input field name', 'File instance or string', {filename: 'itsfile.jpg', content_type: '...'}]
+    ['user_photo', File.read('user_photo.jpg'), {filename: 'photo.jpg'}],
+    # last element is optional
+    ['user_pic', File.open('user_pic.jpg')],
+    # you can also specify other parameters
+    ['user_name', 'john griffin']
+  ],
+  # or you can specify other parameters in body section
+  # it will be merged with multipart data
+  body: {
+    user_age: 25
+  }
+}
+response = http.post some_url, params
+```
+
 ### Set timeout
 
 By default timeout is set to 10 seconds.
@@ -155,7 +181,7 @@ http = HTTPWrapper.new timeout: 5
 
 ### Set logger
 
-If you need to debug your requests, it's as simple as to say `http_wrapper` where to output debug information.
+If you need to debug your requests, it's as simple as to say to `http_wrapper` where to output debug information.
 
 ```ruby
 logger = Logger.new '/path/to/log_file'
@@ -213,6 +239,13 @@ http.get sample_url, headers: { user_agent: 'custom user agent' }
 # the last one always replaces other definitions
 ```
 
+### Perform own custom Net::HTTP requests
+
+```ruby
+request = Net::HTTP::Head.new URI('http://example.com')
+http.execute request
+```
+
 ### Full params hash example
 
 ```ruby
@@ -254,12 +287,25 @@ http.get sample_url, headers: { user_agent: 'custom user agent' }
   user_agent: 'UserAgent v1.2.3',
 
   # Shortcut for Content-Type header (headers hash takes precedence)
-  content_type: 'text/xml'
+  content_type: 'text/xml',
+
+  # multipart/form-data for file uploads
+  # the format of array of arrays is important here!
+  multipart: [
+    # you can use File object
+    ['file_input_name', File.open('somefile.ext')],
+    # - or - string and specify filename
+    ['file_input_name', File.read('somefile.ext'), {filename: 'readme.txt'}],
+    # - or - full format
+    ['file_input_name', 'some file content', {filename: 'readme.txt', content_type: 'text/text'}],
+    # - or - add other simple parameters
+    ['user_name', 'john smith']
+  ]
 }
 ```
 
 Don't worry if you mistype root parameters key. `http_wrapper` checks root parameters keys and instantiation options keys.
-If any unknown options or parameters found, they raise the `UnknownParameterError` exception.
+If any unknown options or parameters found, it raises the `UnknownParameterError` exception.
 
 ## Contributing
 
