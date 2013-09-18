@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.1
+
+* removed options and parameters validation code duplication
+
 ## v2.1.0
 
 * added ability to perform custom `Net::HTTP` requests

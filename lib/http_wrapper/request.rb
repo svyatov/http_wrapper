@@ -5,7 +5,7 @@ class HTTPWrapper
     KNOWN_PARAMS_KEYS = [:headers, :query, :cookie, :auth, :body, :user_agent, :content_type, :multipart].freeze
 
     def initialize(url, method, params = {})
-      validate_parameters params
+      HTTPWrapper.validate_keys params, KNOWN_PARAMS_KEYS
 
       self.uri  = url
 
@@ -45,14 +45,6 @@ class HTTPWrapper
     end
 
     private
-
-    def validate_parameters(params)
-      unknown_params = params.keys - KNOWN_PARAMS_KEYS
-
-      if unknown_params.length > 0
-        raise UnknownParameterError.new "Unknown parameters: #{unknown_params.join(', ')}"
-      end
-    end
 
     def initialize_headers
       @headers[HEADER::USER_AGENT] ||= @user_agent
