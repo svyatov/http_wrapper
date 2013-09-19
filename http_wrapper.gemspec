@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.email         = 'leonid@svyatov.ru'
   spec.description   = %q{Simple wrapper around standard Net::HTTP library with multipart/form-data file upload ability}
   spec.summary       = %q{Simple wrapper around standard Net::HTTP library}
-  spec.homepage      = 'http://github.com/Svyatov/http_wrapper'
+  spec.homepage      = 'http://github.com/svyatov/http_wrapper'
   spec.license       = 'MIT'
 
   spec.files         = Dir['Gemfile', 'LICENSE', 'README.md', 'CHANGELOG.md', 'Rakefile', 'lib/**/*', 'spec/*']
