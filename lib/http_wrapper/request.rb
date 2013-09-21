@@ -15,14 +15,13 @@ class HTTPWrapper
       @login    = params[:auth] && params[:auth].fetch(:login)
       @password = params[:auth] && params[:auth].fetch(:password)
 
-      @method       = method
-      @method_class = Net::HTTP.const_get(method.to_s.capitalize)
+      @method   = Net::HTTP.const_get(method.to_s.capitalize)
 
       @body         = params[:body]
       @user_agent   = params[:user_agent]
-      @content_type = params[:content_type]
+      @content_type = params[:content_type] || default_content_type_for(method)
 
-      @multipart_data = params[:multipart] || []
+      @multipart_data = params[:multipart]
 
       initialize_headers
     end
@@ -47,10 +46,14 @@ class HTTPWrapper
     private
 
     def initialize_headers
-      @headers[HEADER::USER_AGENT] ||= @user_agent
-      case @method
-        when :post, :put then @headers[HEADER::CONTENT_TYPE] ||= (@content_type || CONTENT_TYPE::POST)
-        else @headers[HEADER::CONTENT_TYPE] ||= (@content_type || CONTENT_TYPE::DEFAULT)
+      @headers[HEADER::USER_AGENT]   ||= @user_agent
+      @headers[HEADER::CONTENT_TYPE] ||= @content_type
+    end
+
+    def default_content_type_for(method)
+      case method
+        when :post, :put then CONTENT_TYPE::POST
+        else CONTENT_TYPE::DEFAULT
       end
     end
 
@@ -70,7 +73,7 @@ class HTTPWrapper
     def create_http_request
       # Ruby v1.9.3 doesn't understand full URI object, it needs just path :(
       uri = RUBY_VERSION =~ /\A2/ ? @uri : @uri.request_uri
-      @request = @method_class.new uri, @headers
+      @request = @method.new uri, @headers
       set_cookies
       set_body
       set_basic_auth
@@ -79,12 +82,26 @@ class HTTPWrapper
 
     def set_body
       return unless @request.request_body_permitted?
-      if @multipart_data.length > 0
-        convert_body_to_multipart_data if @body
-        @request.set_form @multipart_data, CONTENT_TYPE::MULTIPART
-      elsif @body
-        @request.body = @body.is_a?(Hash) ? hash_to_query(@body) : @body
+      if @multipart_data
+        set_body_from_multipart_data
+      else
+        set_body_from_body_data
       end
+    end
+
+    def set_body_from_multipart_data
+      convert_body_data_to_multipart_data if @body
+      @request.set_form @multipart_data, CONTENT_TYPE::MULTIPART
+    end
+
+    def convert_body_data_to_multipart_data
+      @body = query_to_hash(@body) unless @body.kind_of? Hash
+      @body.each{|key, value| @multipart_data << [key.to_s, value.to_s]}
+    end
+
+    def set_body_from_body_data
+      return unless @body
+      @request.body = @body.is_a?(Hash) ? hash_to_query(@body) : @body
     end
 
     def set_basic_auth
@@ -95,11 +112,6 @@ class HTTPWrapper
     def set_cookies
       return unless @cookie
       @request['Cookie'] = @cookie
-    end
-
-    def convert_body_to_multipart_data
-      @body = query_to_hash(@body) unless @body.kind_of? Hash
-      @body.each{|key, value| @multipart_data << [key.to_s, value.to_s]}
     end
 
     def query_to_hash(query)
