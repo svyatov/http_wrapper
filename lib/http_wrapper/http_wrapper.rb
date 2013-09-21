@@ -34,7 +34,7 @@ class HTTPWrapper
 
   def post_and_get_cookie(url, params = {})
     response = post url, params
-    response.response['set-cookie']
+    response['set-cookie']
   end
 
   def execute(request, uri)
