@@ -59,8 +59,8 @@ class HTTPWrapper
 
     def rebuild_uri_query_params
       return unless @query.size > 0
-      query = @uri.query ? query_to_hash(@uri.query).merge(@query) : @query
-      @uri.query = URI.encode_www_form query
+      query = @uri.query ? Utils.query_to_hash(@uri.query).merge(@query) : @query
+      @uri.query = Utils.hash_to_query query
     end
 
     def convert_symbol_headers_to_string
@@ -95,13 +95,13 @@ class HTTPWrapper
     end
 
     def convert_body_data_to_multipart_data
-      @body = query_to_hash(@body) unless @body.kind_of? Hash
+      @body = Utils.query_to_hash(@body) unless @body.kind_of? Hash
       @body.each{|key, value| @multipart_data << [key.to_s, value.to_s]}
     end
 
     def set_body_from_body_data
       return unless @body
-      @request.body = @body.is_a?(Hash) ? hash_to_query(@body) : @body
+      @request.body = @body.is_a?(Hash) ? Utils.hash_to_query(@body) : @body
     end
 
     def set_basic_auth
@@ -112,14 +112,6 @@ class HTTPWrapper
     def set_cookies
       return unless @cookie
       @request['Cookie'] = @cookie
-    end
-
-    def query_to_hash(query)
-      Hash[URI.decode_www_form query]
-    end
-
-    def hash_to_query(hash)
-      URI.encode_www_form hash
     end
   end
 end

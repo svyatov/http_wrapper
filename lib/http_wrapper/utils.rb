@@ -6,5 +6,13 @@ class HTTPWrapper
         raise UnknownKeyError.new "Unknown keys: #{unknown_keys.join(', ')}"
       end
     end
+
+    def self.query_to_hash(query)
+      Hash[URI.decode_www_form query]
+    end
+
+    def self.hash_to_query(hash)
+      URI.encode_www_form hash
+    end
   end
 end
