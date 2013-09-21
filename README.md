@@ -312,7 +312,7 @@ http.execute request, uri
 ```
 
 Don't worry if you mistype root parameters key. `http_wrapper` checks root parameters keys and instantiation options keys.
-If any unknown options or parameters found, it raises the `UnknownParameterError` exception.
+If any unknown options or parameters found, it raises the `UnknownKeyError` exception.
 
 ## Contributing
 

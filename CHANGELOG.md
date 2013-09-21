@@ -2,6 +2,7 @@
 
 ## v2.1.1
 
+* `UnknownParameterError` renamed to `UnknownKeyError`
 * removed options and parameters validation code duplication
 
 ## v2.1.0

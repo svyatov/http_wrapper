@@ -5,7 +5,7 @@ class HTTPWrapper
     KNOWN_PARAMS_KEYS = [:headers, :query, :cookie, :auth, :body, :user_agent, :content_type, :multipart].freeze
 
     def initialize(url, method, params = {})
-      HTTPWrapper.validate_keys params, KNOWN_PARAMS_KEYS
+      Utils.validate_hash_keys params, KNOWN_PARAMS_KEYS
 
       self.uri  = url
 

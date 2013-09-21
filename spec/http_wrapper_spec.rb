@@ -24,13 +24,13 @@ describe HTTPWrapper do
       it 'should raise UnknownParameterError if initial options key is unknown' do
         expect do
           HTTPWrapper.new unknown_option: 'test', maybe_this_known: '?'
-        end.to raise_error HTTPWrapper::UnknownParameterError, 'Unknown keys: unknown_option, maybe_this_known'
+        end.to raise_error HTTPWrapper::UnknownKeyError, 'Unknown keys: unknown_option, maybe_this_known'
       end
 
       it 'should raise UnknownParameterError if params key is unknown' do
         expect do
           subject.get sample_url, unknown_param_key: 'test', another_param_key: 'wow'
-        end.to raise_error HTTPWrapper::UnknownParameterError, 'Unknown keys: unknown_param_key, another_param_key'
+        end.to raise_error HTTPWrapper::UnknownKeyError, 'Unknown keys: unknown_param_key, another_param_key'
       end
 
       it 'should follow redirects no more then 10 times by default' do

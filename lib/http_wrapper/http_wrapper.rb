@@ -6,7 +6,7 @@ class HTTPWrapper
   attr_accessor :timeout, :verify_cert, :logger, :max_redirects, :user_agent
 
   def initialize(options = {})
-    HTTPWrapper.validate_keys options, KNOWN_OPTIONS_KEYS
+    Utils.validate_hash_keys options, KNOWN_OPTIONS_KEYS
 
     @timeout       = options.fetch(:timeout) { 10 }
     @verify_cert   = options.fetch(:verify_cert) { true }
@@ -69,13 +69,5 @@ class HTTPWrapper
 
     connection.set_debug_output(@logger)
     connection
-  end
-
-  def self.validate_keys(hash_to_check, known_keys_array)
-    unknown_keys = hash_to_check.keys - known_keys_array
-
-    if unknown_keys.length > 0
-      raise UnknownParameterError.new "Unknown keys: #{unknown_keys.join(', ')}"
-    end
   end
 end
