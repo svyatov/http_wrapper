@@ -34,9 +34,9 @@ class HTTPWrapper
     end
 
     def create
-      rebuild_uri_query_params
-      convert_symbol_headers_to_string
-      create_http_request
+      merge_uri_query
+      convert_symbol_headers_to_strings
+      create_method_specific_request
     end
 
     private
@@ -54,20 +54,25 @@ class HTTPWrapper
       end
     end
 
-    def rebuild_uri_query_params
+    def merge_uri_query
       return unless @query.size > 0
-      query = @uri.query ? Utils.query_to_hash(@uri.query).merge(@query) : @query
-      @uri.query = Utils.hash_to_query query
+      original_query = @uri.query ? Utils.query_to_hash(@uri.query) : {}
+      merged_query = original_query.merge @query
+      @uri.query = Utils.hash_to_query merged_query
     end
 
-    def convert_symbol_headers_to_string
-      @headers.keys.select{|key| key.is_a? Symbol}.each do |key|
-        str_key = key.to_s.gsub(/_/, '-').capitalize
-        @headers[str_key] = @headers.delete key
+    def convert_symbol_headers_to_strings
+      @headers.keys.select{|header| header.is_a? Symbol}.each do |header|
+        str_key = symbol_header_to_string header
+        @headers[str_key] = @headers.delete header
       end
     end
 
-    def create_http_request
+    def symbol_header_to_string(header)
+      header.to_s.gsub(/_/, '-').capitalize
+    end
+
+    def create_method_specific_request
       # Ruby v1.9.3 doesn't understand full URI object, it needs just path :(
       uri = RUBY_VERSION =~ /\A2/ ? @uri : @uri.request_uri
       @request = @method.new uri, @headers
