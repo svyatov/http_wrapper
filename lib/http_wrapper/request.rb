@@ -29,12 +29,8 @@ class HTTPWrapper
     attr_reader :uri
 
     def uri=(url)
-      if url.is_a? URI
-        @uri = url
-      else
-        url = "http://#{url}" unless url =~ /\Ahttps?:\/\//
-        @uri = URI.parse url
-      end
+      url = "http://#{url}" unless url =~ /\Ahttps?:\/\//
+      @uri = URI.parse url
     end
 
     def create
