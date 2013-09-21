@@ -159,6 +159,12 @@ describe HTTPWrapper do
         subject.get sample_url, params
       end
 
+      it 'should use headers cookie if both (headers and parameters) cookies provided' do
+        params = { headers: {'Cookie' => 'Custom cookie'} }
+        stub_get sample_url, params
+        subject.get sample_url, params.merge({cookie: 'should not use this one'})
+      end
+
       it 'should hit provided url with basic auth' do
         stub_get sample_url_with_basic_auth
         subject.get sample_url, auth: {login: basic_auth_login, password: basic_auth_password}

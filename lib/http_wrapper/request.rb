@@ -11,13 +11,13 @@ class HTTPWrapper
 
       @headers  = params[:headers] || {}
       @query    = params[:query]   || {}
-      @cookie   = params[:cookie]  || @headers[HEADER::COOKIE]
       @login    = params[:auth] && params[:auth].fetch(:login)
       @password = params[:auth] && params[:auth].fetch(:password)
 
       @method   = Net::HTTP.const_get(method.to_s.capitalize)
 
       @body         = params[:body]
+      @cookie       = params[:cookie]
       @user_agent   = params[:user_agent]
       @content_type = params[:content_type] || default_content_type_for(method)
 
@@ -48,6 +48,7 @@ class HTTPWrapper
     def initialize_headers
       @headers[HEADER::USER_AGENT]   ||= @user_agent
       @headers[HEADER::CONTENT_TYPE] ||= @content_type
+      @headers[HEADER::COOKIE]       ||= @cookie if @cookie
     end
 
     def default_content_type_for(method)
@@ -74,7 +75,6 @@ class HTTPWrapper
       # Ruby v1.9.3 doesn't understand full URI object, it needs just path :(
       uri = RUBY_VERSION =~ /\A2/ ? @uri : @uri.request_uri
       @request = @method.new uri, @headers
-      set_cookies
       set_body
       set_basic_auth
       @request
@@ -107,11 +107,6 @@ class HTTPWrapper
     def set_basic_auth
       return unless @login
       @request.basic_auth @login, @password
-    end
-
-    def set_cookies
-      return unless @cookie
-      @request['Cookie'] = @cookie
     end
   end
 end
