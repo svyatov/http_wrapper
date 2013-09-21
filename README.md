@@ -3,10 +3,10 @@
 Simple wrapper around standard Net::HTTP library
 
 [![Gem Version](https://badge.fury.io/rb/http_wrapper.png)](http://badge.fury.io/rb/http_wrapper)
-[![Build Status](https://travis-ci.org/Svyatov/http_wrapper.png)](https://travis-ci.org/Svyatov/http_wrapper)
-[![Dependency Status](https://gemnasium.com/Svyatov/http_wrapper.png)](https://gemnasium.com/Svyatov/http_wrapper)
-[![Code Climate](https://codeclimate.com/github/Svyatov/http_wrapper.png)](https://codeclimate.com/github/Svyatov/http_wrapper)
-[![Coverage Status](https://coveralls.io/repos/Svyatov/http_wrapper/badge.png)](https://coveralls.io/r/Svyatov/http_wrapper)
+[![Build Status](https://travis-ci.org/svyatov/http_wrapper.png)](https://travis-ci.org/svyatov/http_wrapper)
+[![Dependency Status](https://gemnasium.com/svyatov/http_wrapper.png)](https://gemnasium.com/svyatov/http_wrapper)
+[![Code Climate](https://codeclimate.com/github/svyatov/http_wrapper.png)](https://codeclimate.com/github/svyatov/http_wrapper)
+[![Coverage Status](https://coveralls.io/repos/svyatov/http_wrapper/badge.png)](https://coveralls.io/r/svyatov/http_wrapper)
 
 ---
 
