@@ -11,7 +11,7 @@ class HTTPWrapper
 
       @query   = params[:query] || {}
       @headers = normalize_headers params[:headers]
-      @method  = Net::HTTP.const_get method.to_s.capitalize
+      @method  = http_method_class_for method
       @cookie  = params[:cookie]
 
       @body_data      = params[:body]
@@ -41,26 +41,6 @@ class HTTPWrapper
 
     private
 
-    def initialize_headers
-      @headers[HEADER::USER_AGENT]   ||= @user_agent
-      @headers[HEADER::CONTENT_TYPE] ||= @content_type
-      @headers[HEADER::COOKIE]       ||= @cookie if @cookie
-    end
-
-    def default_content_type_for(method)
-      case method
-        when :post, :put then CONTENT_TYPE::POST
-        else CONTENT_TYPE::DEFAULT
-      end
-    end
-
-    def merge_uri_query
-      return unless @query.size > 0
-      original_query = @uri.query ? Utils.query_to_hash(@uri.query) : {}
-      merged_query = original_query.merge @query
-      @uri.query = Utils.hash_to_query merged_query
-    end
-
     def normalize_headers(headers)
       normal_headers = {}
       if headers
@@ -74,6 +54,30 @@ class HTTPWrapper
     def normalize_header(header)
       header = header.to_s.gsub(/_/, '-') if header.is_a? Symbol
       header.downcase
+    end
+
+    def http_method_class_for(method)
+      Net::HTTP.const_get method.to_s.capitalize
+    end
+
+    def default_content_type_for(method)
+      case method
+        when :post, :put then CONTENT_TYPE::POST
+        else CONTENT_TYPE::DEFAULT
+      end
+    end
+
+    def initialize_headers
+      @headers[HEADER::USER_AGENT]   ||= @user_agent
+      @headers[HEADER::CONTENT_TYPE] ||= @content_type
+      @headers[HEADER::COOKIE]       ||= @cookie if @cookie
+    end
+
+    def merge_uri_query
+      return unless @query.size > 0
+      original_query = @uri.query ? Utils.query_to_hash(@uri.query) : {}
+      merged_query = original_query.merge @query
+      @uri.query = Utils.hash_to_query merged_query
     end
 
     def create_method_specific_request

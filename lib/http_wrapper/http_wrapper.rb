@@ -15,21 +15,22 @@ class HTTPWrapper
     @user_agent    = options.fetch(:user_agent) { USER_AGENT }
   end
 
-  [:get, :post, :put, :delete].each do |method|
-    define_method method do |url, params = {}|
+  [:get, :post, :put, :delete].each do |method_as_symbol|
+    define_method method_as_symbol do |url, params = {}|
       params[:user_agent] ||= @user_agent
-      get_response Request.new(url, method, params)
+      get_response Request.new(url, method_as_symbol, params)
     end
 
-    %w(ajax json ajax_json).each do |header|
-      define_method "#{method.to_s}_#{header}" do |url, params = {}|
-        params[:headers] ||= {}
-        params[:headers].merge! HTTPWrapper.const_get("#{header}_HEADER".upcase)
-        public_send method, url, params
+    method_as_string = method_as_symbol.to_s
+
+    %w(ajax json ajax_json).each do |request_type|
+      define_method "#{method_as_string}_#{request_type}" do |url, params = {}|
+        (params[:headers] ||= {}).merge!(headers_specific_for request_type)
+        public_send method_as_symbol, url, params
       end
     end
 
-    alias_method "#{method.to_s}_json_ajax", "#{method.to_s}_ajax_json"
+    alias_method "#{method_as_string}_json_ajax", "#{method_as_string}_ajax_json"
   end
 
   def post_and_get_cookie(url, params = {})
@@ -55,6 +56,10 @@ class HTTPWrapper
     end
 
     response
+  end
+
+  def headers_specific_for(request_type)
+    self.class.const_get "#{request_type.upcase}_HEADER"
   end
 
   def create_connection(uri)
