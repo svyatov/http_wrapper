@@ -25,7 +25,7 @@ class HTTPWrapper
       define_method "#{method.to_s}_#{header}" do |url, params = {}|
         params[:headers] ||= {}
         params[:headers].merge! HTTPWrapper.const_get("#{header}_HEADER".upcase)
-        __send__ method, url, params
+        public_send method, url, params
       end
     end
 
