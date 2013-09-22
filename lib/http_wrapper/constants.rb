@@ -1,9 +1,9 @@
 class HTTPWrapper
   module HEADER
-    CONTENT_TYPE = 'Content-Type'.freeze
-    USER_AGENT   = 'User-Agent'.freeze
-    COOKIE       = 'Cookie'.freeze
-    AJAX         = 'X-Requested-With'.freeze
+    CONTENT_TYPE = 'content-type'.freeze
+    USER_AGENT   = 'user-agent'.freeze
+    COOKIE       = 'cookie'.freeze
+    AJAX         = 'x-requested-with'.freeze
   end
 
   module CONTENT_TYPE

@@ -7,21 +7,22 @@ class HTTPWrapper
     def initialize(url, method, params = {})
       Utils.validate_hash_keys params, KNOWN_PARAMS_KEYS
 
-      self.uri  = url
+      self.uri = url
 
-      @headers  = params[:headers] || {}
-      @query    = params[:query]   || {}
-      @login    = params[:auth] && params[:auth].fetch(:login)
-      @password = params[:auth] && params[:auth].fetch(:password)
+      @query   = params[:query] || {}
+      @headers = normalize_headers params[:headers]
+      @method  = Net::HTTP.const_get method.to_s.capitalize
+      @cookie  = params[:cookie]
 
-      @method   = Net::HTTP.const_get(method.to_s.capitalize)
-
-      @body         = params[:body]
-      @cookie       = params[:cookie]
-      @user_agent   = params[:user_agent]
-      @content_type = params[:content_type] || default_content_type_for(method)
-
+      @body_data      = params[:body]
       @multipart_data = params[:multipart]
+      @user_agent     = params[:user_agent]
+      @content_type   = params[:content_type] || default_content_type_for(method)
+
+      if params[:auth]
+        @login    = params[:auth].fetch(:login)
+        @password = params[:auth].fetch(:password)
+      end
 
       initialize_headers
     end
@@ -35,7 +36,6 @@ class HTTPWrapper
 
     def create
       merge_uri_query
-      convert_symbol_headers_to_strings
       create_method_specific_request
     end
 
@@ -61,15 +61,19 @@ class HTTPWrapper
       @uri.query = Utils.hash_to_query merged_query
     end
 
-    def convert_symbol_headers_to_strings
-      @headers.keys.select{|header| header.is_a? Symbol}.each do |header|
-        str_key = symbol_header_to_string header
-        @headers[str_key] = @headers.delete header
+    def normalize_headers(headers)
+      normal_headers = {}
+      if headers
+        headers.each do |header, value|
+          normal_headers[normalize_header header] = value
+        end
       end
+      normal_headers
     end
 
-    def symbol_header_to_string(header)
-      header.to_s.gsub(/_/, '-').capitalize
+    def normalize_header(header)
+      header = header.to_s.gsub(/_/, '-') if header.is_a? Symbol
+      header.downcase
     end
 
     def create_method_specific_request
@@ -91,18 +95,18 @@ class HTTPWrapper
     end
 
     def set_body_from_multipart_data
-      convert_body_data_to_multipart_data if @body
+      convert_body_data_to_multipart_data if @body_data
       @request.set_form @multipart_data, CONTENT_TYPE::MULTIPART
     end
 
     def convert_body_data_to_multipart_data
-      @body = Utils.query_to_hash(@body) unless @body.kind_of? Hash
-      @body.each{|key, value| @multipart_data << [key.to_s, value.to_s]}
+      @body_data = Utils.query_to_hash(@body_data) unless @body_data.kind_of? Hash
+      @body_data.each{|key, value| @multipart_data << [key.to_s, value.to_s]}
     end
 
     def set_body_from_body_data
-      return unless @body
-      @request.body = @body.is_a?(Hash) ? Utils.hash_to_query(@body) : @body
+      return unless @body_data
+      @request.body = @body_data.is_a?(Hash) ? Utils.hash_to_query(@body_data) : @body_data
     end
 
     def set_basic_auth

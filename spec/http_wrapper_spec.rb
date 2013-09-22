@@ -176,8 +176,9 @@ describe HTTPWrapper do
       end
 
       it 'should equally treat header as string and header as symbol' do
-        stub_get sample_url, { headers: {'Content-Type' => 'Some Content Type'} }
-        subject.get sample_url, { headers: {content_type: 'Some Content Type'} }
+        custom_content_type = 'Some Content Type'
+        stub_get sample_url, { headers: {'Content-Type' => custom_content_type} }
+        subject.get sample_url, { headers: {content_type: custom_content_type} }
       end
     end
 
