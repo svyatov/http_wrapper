@@ -2,6 +2,7 @@
 
 ## v2.1.1
 
+* code refactoring
 * fixed `post_and_get_cookie` method (warning: HTTPResponse#response is obsolete)
 * `UnknownParameterError` renamed to `UnknownKeyError`
 * removed options and parameters validation code duplication
