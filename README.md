@@ -15,7 +15,7 @@ Simple wrapper around standard Net::HTTP library
 Add this line to your Gemfile:
 
 ```ruby
-gem 'http_wrapper', '~> 2.1.0'
+gem 'http_wrapper', '~> 2.1.1'
 ```
 
 And then execute:
