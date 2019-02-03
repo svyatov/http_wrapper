@@ -4,9 +4,9 @@ Simple wrapper around standard Net::HTTP library
 
 [![Gem Version](https://badge.fury.io/rb/http_wrapper.svg)](https://badge.fury.io/rb/http_wrapper)
 [![Build Status](https://travis-ci.org/svyatov/http_wrapper.svg?branch=master)](https://travis-ci.org/svyatov/http_wrapper)
+[![Depfu](https://badges.depfu.com/badges/772e76ac2a71ed84291f452cd0e04b83/overview.svg)](https://depfu.com/github/svyatov/http_wrapper?project_id=6879)
 [![Maintainability](https://api.codeclimate.com/v1/badges/41f8e8c507907ea20e2b/maintainability)](https://codeclimate.com/github/svyatov/http_wrapper/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/41f8e8c507907ea20e2b/test_coverage)](https://codeclimate.com/github/svyatov/http_wrapper/test_coverage)
-[![Depfu](https://badges.depfu.com/badges/772e76ac2a71ed84291f452cd0e04b83/overview.svg)](https://depfu.com/github/svyatov/http_wrapper?project_id=6879)
 
 ---
 
