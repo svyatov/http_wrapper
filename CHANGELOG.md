@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.0.0
+
+* dropped support for Ruby 1.9-2.2 and Rubinius
+* rubocop and rubocop-spec gems added for better code quality
+* simplecov gem added to track test coverage
+* code refactoring due to all the changes above
+
 ## v2.1.1
 
 * code refactoring

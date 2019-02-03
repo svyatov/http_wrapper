@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 require 'rspec'
 require 'webmock/rspec'
 
 if ENV['TRAVIS'] == 'true'
-  require 'coveralls'
-  Coveralls.wear!
+  require 'simplecov'
+  SimpleCov.start
 end
 
 $LOAD_PATH.unshift File.expand_path('../lib', File.dirname(__FILE__))
 
 module HTTPWrapperSpecHelpers
-  [:get, :post, :put, :delete].each do |type|
-    define_method("stub_#{type.to_s}") do |url, params = nil|
+  %i[get post put delete].each do |type|
+    define_method("stub_#{type}") do |url, params = nil|
       if params
         stub_request(type, url).with(params)
       else
@@ -20,7 +22,7 @@ module HTTPWrapperSpecHelpers
   end
 
   def stub_redirects(url, amount_of_redirects)
-    stub_get(url).to_return(status: 301, headers: {'Location' => url})
+    stub_get(url).to_return(status: 301, headers: { 'Location' => url })
                  .times(amount_of_redirects)
                  .then
                  .to_return(status: 200)

@@ -1,20 +1,19 @@
+# frozen_string_literal: true
+
 class HTTPWrapper
-  module HEADER
-    CONTENT_TYPE = 'content-type'.freeze
-    USER_AGENT   = 'user-agent'.freeze
-    COOKIE       = 'cookie'.freeze
-    AJAX         = 'x-requested-with'.freeze
-  end
+  USER_AGENT = "HTTPWrapper/#{HTTPWrapper::VERSION}; Ruby/#{RUBY_VERSION}"
 
-  module CONTENT_TYPE
-    DEFAULT   = 'text/html; charset=UTF-8'.freeze
-    JSON      = 'application/json; charset=UTF-8'.freeze
-    POST      = 'application/x-www-form-urlencoded'.freeze
-    MULTIPART = 'multipart/form-data'.freeze
-  end
+  CONTENT_TYPE_HEADER_NAME = 'content-type'
+  USER_AGENT_HEADER_NAME   = 'user-agent'
+  COOKIE_HEADER_NAME       = 'cookie'
+  AJAX_HEADER_NAME         = 'x-requested-with'
 
-  USER_AGENT  = "HTTPWrapper/#{HTTPWrapper::VERSION}; Ruby/#{RUBY_VERSION}".freeze
-  AJAX_HEADER = { HEADER::AJAX => 'XMLHttpRequest'.freeze }.freeze
-  JSON_HEADER = { HEADER::CONTENT_TYPE => CONTENT_TYPE::JSON }.freeze
+  DEFAULT_CONTENT_TYPE   = 'text/html; charset=UTF-8'
+  JSON_CONTENT_TYPE      = 'application/json; charset=UTF-8'
+  POST_CONTENT_TYPE      = 'application/x-www-form-urlencoded'
+  MULTIPART_CONTENT_TYPE = 'multipart/form-data'
+
+  AJAX_HEADER = { AJAX_HEADER_NAME => 'XMLHttpRequest' }.freeze
+  JSON_HEADER = { CONTENT_TYPE_HEADER_NAME => JSON_CONTENT_TYPE }.freeze
   AJAX_JSON_HEADER = AJAX_HEADER.dup.merge!(JSON_HEADER).freeze
 end

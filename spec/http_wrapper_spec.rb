@@ -1,271 +1,269 @@
+# frozen_string_literal: true
+
 require_relative 'spec_helper'
 
 require 'http_wrapper'
 
 describe HTTPWrapper do
+  subject(:http) { described_class.new }
+
   let(:basic_auth_login) { 'balogin' }
   let(:basic_auth_password) { 'bapassword' }
 
-  it 'should define all dynamic methods' do
-    [:get,           :post,           :put,           :delete,
-     :get_json,      :post_json,      :put_json,      :delete_json,
-     :get_ajax,      :post_ajax,      :put_ajax,      :delete_ajax,
-     :get_ajax_json, :post_ajax_json, :put_ajax_json, :delete_ajax_json,
-     :get_json_ajax, :post_json_ajax, :put_json_ajax, :delete_json_ajax].each do |method|
-      subject.should be_respond_to method
+  it 'defines all dynamic methods' do
+    %i[get post put delete
+       get_json post_json put_json delete_json
+       get_ajax post_ajax put_ajax delete_ajax
+       get_ajax_json post_ajax_json put_ajax_json delete_ajax_json
+       get_json_ajax post_json_ajax put_json_ajax delete_json_ajax].each do |method|
+      expect(http).to respond_to method
     end
   end
 
-  context 'HTTP' do
+  describe 'HTTP' do
     let(:sample_url) { 'http://example.com' }
-    let(:sample_url_with_basic_auth) { "http://#{basic_auth_login}:#{basic_auth_password}@example.com" }
 
-    context 'Options' do
-      it 'should raise UnknownParameterError if initial options key is unknown' do
+    describe 'Options' do
+      it 'raises UnknownParameterError if initial options key is unknown' do
         expect do
-          HTTPWrapper.new unknown_option: 'test', maybe_this_known: '?'
+          described_class.new unknown_option: 'test', maybe_this_known: '?'
         end.to raise_error HTTPWrapper::UnknownKeyError, 'Unknown keys: unknown_option, maybe_this_known'
       end
 
-      it 'should raise UnknownParameterError if params key is unknown' do
+      it 'raises UnknownParameterError if params key is unknown' do
         expect do
-          subject.get sample_url, unknown_param_key: 'test', another_param_key: 'wow'
+          http.get sample_url, unknown_param_key: 'test', another_param_key: 'wow'
         end.to raise_error HTTPWrapper::UnknownKeyError, 'Unknown keys: unknown_param_key, another_param_key'
       end
 
-      it 'should follow redirects no more then 10 times by default' do
+      it 'follows redirects no more then 10 times by default' do
         stub_redirects sample_url, 9
-        response = subject.get sample_url
-        response.code.should eql '200'
+        response = http.get sample_url
+        expect(response.code).to eq '200'
 
         stub_redirects sample_url, 10
-        expect { subject.get sample_url }.to raise_error HTTPWrapper::TooManyRedirectsError, 'Too many redirects!'
+        expect { http.get sample_url }.to raise_error HTTPWrapper::TooManyRedirectsError, 'Too many redirects!'
       end
 
-      it 'should follow redirects no more times then specified' do
-        subject.max_redirects = 5
+      it 'follows redirects no more times then specified' do
+        http.max_redirects = 5
 
         stub_redirects sample_url, 4
-        response = subject.get sample_url
-        response.code.should eql '200'
+        response = http.get sample_url
+        expect(response.code).to eq '200'
 
         stub_redirects sample_url, 5
-        expect { subject.get sample_url }.to raise_error HTTPWrapper::TooManyRedirectsError, 'Too many redirects!'
+        expect { http.get sample_url }.to raise_error HTTPWrapper::TooManyRedirectsError, 'Too many redirects!'
       end
 
-      it 'should use logger' do
+      it 'uses logger' do
         require 'logger'
         logger = Logger.new StringIO.new
-        logger.should_receive(:<<).at_least(:once)
-        subject.logger = logger
+        allow(logger).to receive(:<<)
+        http.logger = logger
 
         WebMock.allow_net_connect!
         begin
-          subject.get 'localhost'
-        rescue
+          http.get 'localhost'
+        rescue StandardError # rubocop:disable Lint/HandleExceptions
           # NOOP, rescue from "connection refused" and such
         end
         WebMock.disable_net_connect!
+
+        expect(logger).to have_received(:<<).at_least(:once)
       end
     end
 
-    context 'GET' do
-      it 'should add http uri scheme if missing' do
+    describe 'GET' do
+      it 'adds http uri scheme if missing' do
         stub_get sample_url
-        subject.get sample_url.gsub(/\Ahttp:\/\//, '')
+        http.get sample_url.gsub(%r{\Ahttp://}, '')
       end
 
-      it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::DEFAULT} }
+      it 'hits provided url with default content type' do
+        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::DEFAULT_CONTENT_TYPE } }
         stub_get sample_url, params
-        subject.get sample_url
+        http.get sample_url
       end
 
-      it 'should set content type if provided' do
-        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => 'Custom Content Type'} }
+      it 'sets content type if provided' do
+        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' } }
         stub_get sample_url, params
-        subject.get sample_url, params
-        subject.get sample_url, content_type: 'Custom Content Type'
-        subject.get sample_url, params.merge({content_type: 'Should Be Overwritten'})
+        http.get sample_url, params
+        http.get sample_url, content_type: 'Custom Content Type'
+        http.get sample_url, params.merge(content_type: 'Should Be Overwritten')
       end
 
-      it 'should set proper header for JSON requests' do
+      it 'sets proper header for JSON requests' do
         params = { headers: HTTPWrapper::JSON_HEADER }
         stub_get sample_url, params
-        subject.get_json sample_url
+        http.get_json sample_url
       end
 
-      it 'should set proper header for AJAX requests' do
+      it 'sets proper header for AJAX requests' do
         params = {
           headers: {
-            HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::DEFAULT
+            HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::DEFAULT_CONTENT_TYPE
           }.merge(HTTPWrapper::AJAX_HEADER)
         }
         stub_get sample_url, params
-        subject.get_ajax sample_url
+        http.get_ajax sample_url
       end
 
-      it 'should set proper headers for AJAX-JSON requests' do
+      it 'sets proper headers for AJAX-JSON requests' do
         params = { headers: HTTPWrapper::AJAX_JSON_HEADER }
         stub_get sample_url, params
-        subject.get_ajax_json sample_url
+        http.get_ajax_json sample_url
       end
 
-      it 'should correctly escape query parameters' do
-        stub_get sample_url + '/?param1=&param2=A%26B&param3=C%20%26%20D'
-        subject.get sample_url, query: {param1: '', param2: 'A&B', param3: 'C & D'}
+      it 'correctlies escape query parameters' do
+        stub_get "#{sample_url}/?param1=&param2=A%26B&param3=C%20%26%20D"
+        http.get sample_url, query: { param1: '', param2: 'A&B', param3: 'C & D' }
       end
 
-      it 'should set default user agent' do
-        params = { headers: {HTTPWrapper::HEADER::USER_AGENT => HTTPWrapper::USER_AGENT} }
+      it 'sets default user agent' do
+        params = { headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => HTTPWrapper::USER_AGENT } }
         stub_get sample_url, params
-        subject.get sample_url
+        http.get sample_url
       end
 
-      it 'should change user agent if provided' do
+      it 'changes user agent if provided' do
         custom_user_agent = 'Mozilla v1.2.3'
-        params = { headers: {HTTPWrapper::HEADER::USER_AGENT => custom_user_agent} }
+        params = { headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => custom_user_agent } }
         stub_get sample_url, params
-        subject.get sample_url, params
+        http.get sample_url, params
 
-        subject.get sample_url, user_agent: custom_user_agent
+        http.get sample_url, user_agent: custom_user_agent
 
-        subject.user_agent = custom_user_agent
-        subject.get sample_url
+        http.user_agent = custom_user_agent
+        http.get sample_url
 
         expect do
-          subject.get sample_url, user_agent: 'abracadabra'
+          http.get sample_url, user_agent: 'abracadabra'
         end.to raise_error WebMock::NetConnectNotAllowedError
 
         expect do
-          subject.user_agent = 'another test'
-          subject.get sample_url
+          http.user_agent = 'another test'
+          http.get sample_url
         end.to raise_error WebMock::NetConnectNotAllowedError
       end
 
-      it 'should precedence header user agent before params' do
-        params = { headers: {HTTPWrapper::HEADER::USER_AGENT => 'TestUserAgent'} }
+      it 'precedences header user agent before params' do
+        params = { headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => 'TestUserAgent' } }
         stub_get sample_url, params
 
-        subject.user_agent = 'Should Be Overwritten'
-        subject.get sample_url, params
+        http.user_agent = 'Should Be Overwritten'
+        http.get sample_url, params
       end
 
-      it 'should send cookie if provided' do
+      it 'sends cookie if provided' do
         cookie_value = 'some cookie'
-        params = { headers: {'Cookie' => cookie_value} }
+        params = { headers: { 'Cookie' => cookie_value } }
         stub_get sample_url, params
-        subject.get sample_url, cookie: cookie_value
-        subject.get sample_url, params
+        http.get sample_url, cookie: cookie_value
+        http.get sample_url, params
       end
 
-      it 'should use headers cookie if both (headers and parameters) cookies provided' do
-        params = { headers: {'Cookie' => 'Custom cookie'} }
+      it 'uses headers cookie if both (headers and parameters) cookies provided' do
+        params = { headers: { 'Cookie' => 'Custom cookie' } }
         stub_get sample_url, params
-        subject.get sample_url, params.merge({cookie: 'should not use this one'})
+        http.get sample_url, params.merge(cookie: 'should not use this one')
       end
 
-      it 'should hit provided url with basic auth' do
-        stub_get sample_url_with_basic_auth
-        subject.get sample_url, auth: {login: basic_auth_login, password: basic_auth_password}
+      it 'hits provided url with basic auth' do
+        stub_request(:get, sample_url).with(basic_auth: [basic_auth_login, basic_auth_password])
+        http.get sample_url, auth: { login: basic_auth_login, password: basic_auth_password }
       end
 
-      it 'should merge query parameters and params should take precedence' do
-        stub_get sample_url + '/?text=edf&time=16:44&user=test'
-        subject.get(sample_url + '/?user=test&text=abc', query: {time: '16:44', text: 'edf'})
+      it 'merges query parameters and params should take precedence' do
+        stub_get "#{sample_url}/?text=edf&time=16:44&user=test"
+        http.get "#{sample_url}/?user=test&text=abc", query: { time: '16:44', text: 'edf' }
       end
 
-      it 'should equally treat header as string and header as symbol' do
+      it 'equallies treat header as string and header as symbol' do
         custom_content_type = 'Some Content Type'
-        stub_get sample_url, { headers: {'Content-Type' => custom_content_type} }
-        subject.get sample_url, { headers: {content_type: custom_content_type} }
+        stub_get sample_url, headers: { 'Content-Type' => custom_content_type }
+        http.get sample_url, headers: { content_type: custom_content_type }
       end
     end
 
-    context 'POST' do
-      it 'should set content type if provided' do
-        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => 'Custom Content Type'} }
+    describe 'POST' do
+      it 'sets content type if provided' do
+        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' } }
         stub_post sample_url, params
-        subject.post sample_url, params
+        http.post sample_url, params
       end
 
-      it 'should return cookies after post' do
+      it 'returns cookies after post' do
         cookie_value = 'some cookie'
-        params = { body: {username: 'test', password: 'test'} }
-        stub_post(sample_url, params).to_return({headers: {'Set-Cookie' => cookie_value}})
-        cookie = subject.post_and_get_cookie sample_url, params
-        cookie.should eql cookie_value
+        params = { body: { username: 'test', password: 'test' } }
+        stub_post(sample_url, params).to_return(headers: { 'Set-Cookie' => cookie_value })
+        cookie = http.post_and_get_cookie sample_url, params
+        expect(cookie).to eq cookie_value
       end
 
-      it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::POST } }
+      it 'hits provided url with default content type' do
+        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::POST_CONTENT_TYPE } }
         stub_post sample_url, params
-        subject.post sample_url
+        http.post sample_url
       end
 
-      it 'should set all possible parameters correctly' do
-        stub_request(:post, 'http://user:passw@example.com/?a=b&c=d').
-            with(body: {
-            e: 'f',
-            g: 'k'
-        },
-                 headers: {
-                     'Content-Type' => 'Custom content type',
-                     'User-Agent' => 'Custom user agent',
-                     'Cookie' => 'cookie',
-                     'X-Requested-With' => 'XMLHttpRequest'
-                 })
+      it 'sets all possible parameters correctly' do
+        stub_request(:post, "#{sample_url}/?a=b&c=d")
+          .with(
+            body: 'e=f&g=k',
+            headers: {
+              'Content-Type' => 'Custom content type',
+              'User-Agent' => 'Custom user agent',
+              'Cookie' => 'cookie',
+              'X-Requested-With' => 'XMLHttpRequest'
+            },
+            basic_auth: %w[user passw]
+          )
 
-        subject.post sample_url, content_type: 'Custom content type',
-                     user_agent: 'Custom user agent',
-                     headers: {x_requested_with: 'XMLHttpRequest'},
-                     query: {a: 'b', c: 'd'},
-                     body: {e: 'f', g: 'k'},
-                     auth: {login: 'user', password: 'passw'},
-                     cookie: 'cookie'
+        http.post sample_url,
+                  content_type: 'Custom content type',
+                  user_agent: 'Custom user agent',
+                  headers: { x_requested_with: 'XMLHttpRequest' },
+                  query: { a: 'b', c: 'd' },
+                  body: { e: 'f', g: 'k' },
+                  auth: { login: 'user', password: 'passw' },
+                  cookie: 'cookie'
       end
     end
 
-    context 'PUT' do
-      it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::POST } }
+    describe 'PUT' do
+      it 'hits provided url with default content type' do
+        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::POST_CONTENT_TYPE } }
         stub_put sample_url, params
-        subject.put sample_url
+        http.put sample_url
       end
     end
 
-    context 'DELETE' do
-      it 'should hit provided url with default content type' do
-        params = { headers: {HTTPWrapper::HEADER::CONTENT_TYPE => HTTPWrapper::CONTENT_TYPE::DEFAULT } }
+    describe 'DELETE' do
+      it 'hits provided url with default content type' do
+        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::DEFAULT_CONTENT_TYPE } }
         stub_delete sample_url, params
-        subject.delete sample_url
+        http.delete sample_url
       end
     end
 
-    context 'Custom request instance' do
-      it 'should perform request for custom Net::HTTP request instance' do
+    describe 'Custom request instance' do
+      it 'performs request for custom Net::HTTP request instance' do
         stub_request :head, sample_url
         uri = URI sample_url
-
-        if RUBY_VERSION =~ /\A2/
-          request = Net::HTTP::Head.new uri
-          subject.execute request, request.uri
-        else
-          # Ruby v1.9.3 doesn't understand full URI object, it needs just path :(
-          request = Net::HTTP::Head.new uri.request_uri
-          subject.execute request, uri
-        end
+        request = Net::HTTP::Head.new uri
+        http.execute request, request.uri
       end
     end
   end
 
-  context 'HTTPS' do
+  describe 'HTTPS' do
     let(:sample_url) { 'https://example.com' }
 
-    it 'should hit provided url with HTTPS protocol' do
+    it 'hits provided url with HTTPS protocol' do
       stub_get sample_url
-      subject.get sample_url
+      http.get sample_url
     end
   end
 end
-

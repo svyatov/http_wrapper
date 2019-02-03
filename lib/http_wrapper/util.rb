@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 class HTTPWrapper
-  module Utils
+  module Util
     def self.validate_hash_keys(hash_to_check, known_keys_array)
       unknown_keys = hash_to_check.keys - known_keys_array
-      if unknown_keys.length > 0
-        raise UnknownKeyError.new "Unknown keys: #{unknown_keys.join(', ')}"
-      end
+      return if unknown_keys.empty?
+
+      raise UnknownKeyError, "Unknown keys: #{unknown_keys.join(', ')}"
     end
 
     def self.query_to_hash(query)

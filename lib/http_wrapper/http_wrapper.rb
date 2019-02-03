@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 require 'net/https'
 
 class HTTPWrapper
-  KNOWN_OPTIONS_KEYS = [:timeout, :verify_cert, :logger, :max_redirects, :user_agent].freeze
+  KNOWN_OPTIONS_KEYS = %i[timeout verify_cert logger max_redirects user_agent].freeze
 
   attr_accessor :timeout, :verify_cert, :logger, :max_redirects, :user_agent
 
   def initialize(options = {})
-    Utils.validate_hash_keys options, KNOWN_OPTIONS_KEYS
+    Util.validate_hash_keys options, KNOWN_OPTIONS_KEYS
 
     @timeout       = options.fetch(:timeout) { 10 }
     @verify_cert   = options.fetch(:verify_cert) { true }
@@ -15,7 +17,7 @@ class HTTPWrapper
     @user_agent    = options.fetch(:user_agent) { USER_AGENT }
   end
 
-  [:get, :post, :put, :delete].each do |method_as_symbol|
+  %i[get post put delete].each do |method_as_symbol|
     define_method method_as_symbol do |url, params = {}|
       params[:user_agent] ||= @user_agent
       get_response Request.new(url, method_as_symbol, params)
@@ -23,9 +25,9 @@ class HTTPWrapper
 
     method_as_string = method_as_symbol.to_s
 
-    %w(ajax json ajax_json).each do |request_type|
+    %w[ajax json ajax_json].each do |request_type|
       define_method "#{method_as_string}_#{request_type}" do |url, params = {}|
-        (params[:headers] ||= {}).merge!(headers_specific_for request_type)
+        (params[:headers] ||= {}).merge!(headers_specific_for(request_type))
         public_send method_as_symbol, url, params
       end
     end
@@ -46,11 +48,11 @@ class HTTPWrapper
   private
 
   def get_response(request, redirects_limit = @max_redirects)
-    raise TooManyRedirectsError.new 'Too many redirects!' if redirects_limit == 0
+    raise TooManyRedirectsError, 'Too many redirects!' if redirects_limit == 0
 
     response = execute request.create, request.uri
 
-    if response.kind_of? Net::HTTPRedirection
+    if response.is_a? Net::HTTPRedirection
       request.uri = response['location']
       response = get_response request, redirects_limit - 1
     end
@@ -67,7 +69,7 @@ class HTTPWrapper
     connection.read_timeout = @timeout
     connection.open_timeout = @timeout
 
-    if uri.kind_of? URI::HTTPS
+    if uri.is_a? URI::HTTPS
       connection.use_ssl = true
       connection.verify_mode = OpenSSL::SSL::VERIFY_NONE unless @verify_cert
     end

@@ -4,9 +4,8 @@ Simple wrapper around standard Net::HTTP library
 
 [![Gem Version](https://badge.fury.io/rb/http_wrapper.png)](http://badge.fury.io/rb/http_wrapper)
 [![Build Status](https://travis-ci.org/svyatov/http_wrapper.png)](https://travis-ci.org/svyatov/http_wrapper)
-[![Dependency Status](https://gemnasium.com/svyatov/http_wrapper.png)](https://gemnasium.com/svyatov/http_wrapper)
-[![Code Climate](https://codeclimate.com/github/svyatov/http_wrapper.png)](https://codeclimate.com/github/svyatov/http_wrapper)
-[![Coverage Status](https://coveralls.io/repos/svyatov/http_wrapper/badge.png)](https://coveralls.io/r/svyatov/http_wrapper)
+[![Maintainability](https://api.codeclimate.com/v1/badges/41f8e8c507907ea20e2b/maintainability)](https://codeclimate.com/github/svyatov/http_wrapper/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/41f8e8c507907ea20e2b/test_coverage)](https://codeclimate.com/github/svyatov/http_wrapper/test_coverage)
 
 ---
 
@@ -15,7 +14,7 @@ Simple wrapper around standard Net::HTTP library
 Add this line to your Gemfile:
 
 ```ruby
-gem 'http_wrapper', '~> 2.1.1'
+gem 'http_wrapper', '~> 3.0'
 ```
 
 And then execute:
@@ -245,10 +244,7 @@ http.get sample_url, headers: { user_agent: 'custom user agent' }
 ```ruby
 uri = URI 'http://example.com'
 
-# Ruby 2.0.0
 request = Net::HTTP::Head.new uri
-# Ruby 1.9.3
-request = Net::HTTP::Head.new uri.request_uri
 
 http.execute request, uri
 ```

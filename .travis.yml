@@ -1,20 +1,36 @@
 language: ruby
 
+env:
+  global:
+    - CC_TEST_REPORTER_ID=9995f7b2aa6866b0427aef31d946ff1feded8f6e109eaf6ccb58e91c73d0bfeb
+
 rvm:
-  - 1.9.3
-  - 2.0.0
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
   - ruby-head
-  - jruby-19mode
   - jruby-head
-  - rbx-19mode
-
-gemfile: Gemfile.ci
-
-notifications:
-  recipients: leonid@svyatov.ru
-  on_failure: change
 
 matrix:
   allow_failures:
     - rvm:
-      - ruby-head
+        - ruby-head
+
+gemfile: Gemfile.ci
+
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
+script:
+  - bundle exec rubocop -DESP
+  - bundle exec rake
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+
+notifications:
+  recipients: leonid@svyatov.ru
+  on_failure: change
