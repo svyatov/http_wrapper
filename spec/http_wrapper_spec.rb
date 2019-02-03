@@ -4,7 +4,7 @@ require_relative 'spec_helper'
 
 require 'http_wrapper'
 
-describe HTTPWrapper do
+RSpec.describe HTTPWrapper do
   subject(:http) { described_class.new }
 
   let(:basic_auth_login) { 'balogin' }

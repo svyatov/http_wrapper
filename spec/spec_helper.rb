@@ -1,14 +1,12 @@
 # frozen_string_literal: true
 
-require 'rspec'
+require 'bundler/setup'
 require 'webmock/rspec'
 
 if ENV['TRAVIS'] == 'true'
   require 'simplecov'
   SimpleCov.start
 end
-
-$LOAD_PATH.unshift File.expand_path('../lib', File.dirname(__FILE__))
 
 module HTTPWrapperSpecHelpers
   %i[get post put delete].each do |type|
@@ -31,4 +29,11 @@ end
 
 RSpec.configure do |config|
   config.include HTTPWrapperSpecHelpers
+
+  # Disable RSpec exposing methods globally on `Module` and `main`
+  config.disable_monkey_patching!
+
+  config.expect_with :rspec do |c|
+    c.syntax = :expect
+  end
 end

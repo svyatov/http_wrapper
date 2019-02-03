@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class HTTPWrapper
-  HTTPWrapperError      = Class.new StandardError
-  TooManyRedirectsError = Class.new HTTPWrapperError
-  UnknownKeyError       = Class.new HTTPWrapperError
+  Error = Class.new StandardError
+  TooManyRedirectsError = Class.new Error
+  UnknownKeyError = Class.new Error
 end

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require File.expand_path('lib/http_wrapper/version', __dir__)
+lib = File.expand_path('lib', __dir__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'http_wrapper/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'http_wrapper'
@@ -12,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'http://github.com/svyatov/http_wrapper'
   spec.license       = 'MIT'
 
-  spec.files         = Dir['Gemfile', 'LICENSE', 'README.md', 'CHANGELOG.md', 'Rakefile', 'lib/**/*', 'spec/*']
+  spec.files         = Dir['Gemfile', 'LICENSE', 'README.md', 'CHANGELOG.md', 'Rakefile', 'lib/**/*']
   spec.test_files    = Dir['spec/*']
   spec.require_paths = %w[lib]
 
@@ -23,5 +25,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec',   '~> 3.7'
   spec.add_development_dependency 'rubocop', '~> 0.63.1'
   spec.add_development_dependency 'rubocop-rspec', '~> 1.32'
+  spec.add_development_dependency 'simplecov', '~> 0.16.1'
   spec.add_development_dependency 'webmock', '~> 3.5'
 end
