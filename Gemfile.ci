@@ -1,8 +1,0 @@
-# frozen_string_literal: true
-
-source 'https://rubygems.org'
-gemspec
-
-gem 'simplecov', require: false
-gem 'rubocop', '~> 0.63.1'
-gem 'rubocop-rspec', '~> 1.32'

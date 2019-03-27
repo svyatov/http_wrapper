@@ -20,8 +20,8 @@ matrix:
   allow_failures:
     - rvm:
         - ruby-head
-
-gemfile: Gemfile.ci
+        - jruby-head
+        - truffleruby
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
