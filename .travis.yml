@@ -18,10 +18,10 @@ rvm:
 
 matrix:
   allow_failures:
-    - rvm:
-        - ruby-head
-        - jruby-head
-        - truffleruby
+    - rvm: ruby-head
+    - rvm: jruby-head
+    - rvm: truffleruby
+  fast_finish: true
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
