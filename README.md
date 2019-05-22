@@ -95,9 +95,9 @@ Add special header or use special method:
 ```ruby
 response = http.get_ajax some_url
 # - or -
-response = http.get some_url, headers: {x_requested_with: 'XMLHttpRequest'}
+response = http.get some_url, headers: { x_requested_with: 'XMLHttpRequest' }
 # - or -
-response = http.get some_url, headers: {'X-Requested-With' => 'XMLHttpRequest'}
+response = http.get some_url, headers: { 'X-Requested-With' => 'XMLHttpRequest' }
 ```
 
 ### Access JSON resource
@@ -109,9 +109,9 @@ response = http.get_json some_url
 # - or -
 response = http.get some_url, content_type: 'application/json; charset=UTF-8'
 # - or -
-response = http.get some_url, headers: {content_type: 'application/json; charset=UTF-8'}
+response = http.get some_url, headers: { content_type: 'application/json; charset=UTF-8' }
 # - or -
-response = http.get some_url, headers: {'Content-Type' => 'application/json; charset=UTF-8'}
+response = http.get some_url, headers: { 'Content-Type' => 'application/json; charset=UTF-8' }
 ```
 
 ### Access JSON resource mimicing AJAX
@@ -135,14 +135,14 @@ response = http.get_json_ajax some_url, some_params
 Don't worry about escaping, `http_wrapper` got you covered here either.
 
 ```ruby
-response = http.get 'http://www.google.com', query: {message: 'Hi! M&Ms!', user: 'iamjohn'}
+response = http.get 'http://www.google.com', query: { message: 'Hi! M&Ms!', user: 'iamjohn' }
 # => http://www.google.com/?message=Hi!%20M%26Ms!&user=iamjohn
 ```
 
 Don't worry about parameters that already in URL, they'll be merged.
 
 ```ruby
-response = http.get 'http://www.google.com/?q=test', query: {user: 'iamjohn'}
+response = http.get 'http://www.google.com/?q=test', query: { user: 'iamjohn' }
 # => http://www.google.com/?q=test&user=iamjohn
 ```
 
@@ -154,8 +154,8 @@ You can easily upload any number of files with `multipart/form-data` content typ
 http = HTTPWrapper.new
 params = {
   multipart: [
-    # ['file input field name', 'File instance or string', {filename: 'itsfile.jpg', content_type: '...'}]
-    ['user_photo', File.read('user_photo.jpg'), {filename: 'photo.jpg'}],
+    # ['file input field name', 'File instance or string', { filename: 'itsfile.jpg', content_type: '...' }]
+    ['user_photo', File.read('user_photo.jpg'), { filename: 'photo.jpg' }],
     # last element is optional
     ['user_pic', File.open('user_pic.jpg')],
     # you can also specify other parameters
@@ -209,11 +209,11 @@ http = HTTPWrapper.new verify_cert: false
 On each `get` method there are `post`, `put` and `delete` methods. Examples:
 
 ```ruby
-http.post some_url, body: {user: 'iamjohn', password: 'secret'}
+http.post some_url, body: { user: 'iamjohn', password: 'secret' }
 # - or -
-http.put some_url, body: {user: 'iamjohn', password: 'secret'}
+http.put some_url, body: { user: 'iamjohn', password: 'secret' }
 # - or -
-http.delete some_url, query: {user: 'iamjohn'}
+http.delete some_url, query: { user: 'iamjohn' }
 ```
 
 Default content type header for these requests is `application/x-www-form-urlencoded; charset=UTF-8`.
@@ -299,9 +299,9 @@ http.execute request, uri
     # you can use File object
     ['file_input_name', File.open('somefile.ext')],
     # - or - string and specify filename
-    ['file_input_name', File.read('somefile.ext'), {filename: 'readme.txt'}],
+    ['file_input_name', File.read('somefile.ext'), { filename: 'readme.txt' }],
     # - or - full format
-    ['file_input_name', 'some file content', {filename: 'readme.txt', content_type: 'text/text'}],
+    ['file_input_name', 'some file content', { filename: 'readme.txt', content_type: 'text/text' }],
     # - or - add other simple parameters
     ['user_name', 'john smith']
   ]
