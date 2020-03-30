@@ -28,7 +28,6 @@ before_script:
   - ./cc-test-reporter before-build
 
 script:
-  - bundle exec rubocop -DESP
   - bundle exec rake
 
 after_script:
