@@ -1,5 +1,6 @@
 ---
-sudo: false
+dist: bionic
+os: linux
 language: ruby
 cache: bundler
 
@@ -15,7 +16,7 @@ rvm:
   - jruby-head
   - truffleruby
 
-matrix:
+jobs:
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
