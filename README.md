@@ -17,7 +17,7 @@ If you need something more fully-featured you should use absolutely awesome [HTT
 Add this line to your Gemfile:
 
 ```ruby
-gem 'http_wrapper', '~> 3.0'
+gem 'http_wrapper', '~> 4.0'
 ```
 
 And then execute:

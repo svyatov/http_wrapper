@@ -18,13 +18,14 @@ Gem::Specification.new do |spec|
   spec.test_files    = Dir['spec/*']
   spec.require_paths = %w[lib]
 
-  spec.required_ruby_version = '>= 2.3.0'
+  spec.required_ruby_version = '>= 2.5.0'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'rspec',   '~> 3.7'
-  spec.add_development_dependency 'rubocop', '~> 0.75.0'
-  spec.add_development_dependency 'rubocop-rspec', '~> 1.32'
-  spec.add_development_dependency 'simplecov', '~> 0.17.1'
-  spec.add_development_dependency 'webmock', '~> 3.5'
+  spec.add_development_dependency 'rspec',   '~> 3.9'
+  spec.add_development_dependency 'rubocop', '~> 0.80'
+  spec.add_development_dependency 'rubocop-performance', '~> 1.5'
+  spec.add_development_dependency 'rubocop-rspec', '~> 1.38'
+  spec.add_development_dependency 'simplecov', '~> 0.18'
+  spec.add_development_dependency 'webmock', '~> 3.8'
 end

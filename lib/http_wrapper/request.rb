@@ -32,7 +32,7 @@ class HTTPWrapper
     attr_reader :uri
 
     def uri=(url)
-      url = "http://#{url}" unless url =~ %r{\Ahttps?://}
+      url = "http://#{url}" unless %r{\Ahttps?://}.match?(url)
       @uri = URI.parse url
     end
 

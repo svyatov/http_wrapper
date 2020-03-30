@@ -1,5 +1,13 @@
 # Changelog
 
+## v4.0.0
+
+* dropped support for Ruby 2.3 and 2.4
+* added Ruby 2.7 to the TravisCI config
+* rubocop-performance gem added
+* rubocop rake task added to the default rake task
+* all development dependencies updated
+
 ## v3.0.0
 
 * dropped support for Ruby 1.9-2.2 and Rubinius

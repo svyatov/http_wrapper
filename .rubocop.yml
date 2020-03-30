@@ -1,17 +1,15 @@
 require:
   - 'rubocop-rspec'
+  - 'rubocop-performance'
 
 AllCops:
-  TargetRubyVersion: 2.3
+  TargetRubyVersion: 2.5
 
   DisplayCopNames: true
   DisplayStyleGuide: true
   ExtraDetails: true
 
-Documentation:
-  Enabled: false
-
-Metrics/LineLength:
+Layout/LineLength:
   Max: 120
 
 Metrics/BlockLength:
@@ -21,11 +19,20 @@ Metrics/BlockLength:
 Metrics/MethodLength:
   Max: 15
 
-Bundler/OrderedGems:
+Style/Documentation:
   Enabled: false
 
 Style/NumericPredicate:
   Enabled: false
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
 
 RSpec/ExampleLength:
   Enabled: false

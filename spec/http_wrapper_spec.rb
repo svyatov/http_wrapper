@@ -65,7 +65,7 @@ RSpec.describe HTTPWrapper do
         WebMock.allow_net_connect!
         begin
           http.get 'localhost'
-        rescue StandardError # rubocop:disable Lint/HandleExceptions
+        rescue StandardError # rubocop:disable Lint/SuppressedException
           # NOOP, rescue from "connection refused" and such
         end
         WebMock.disable_net_connect!
