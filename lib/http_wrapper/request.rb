@@ -4,26 +4,23 @@ require 'uri/common'
 
 class HTTPWrapper
   class Request
-    KNOWN_PARAMS_KEYS = %i[headers query cookie auth body user_agent content_type multipart].freeze
-
-    def initialize(url, method, params = {}) # rubocop:disable Metrics/AbcSize
-      Util.validate_hash_keys params, KNOWN_PARAMS_KEYS
-
+    def initialize(url, method, headers: nil, query: nil, cookie: nil, auth: nil,
+                   body: nil, user_agent: nil, content_type: nil, multipart: nil)
       self.uri = url
 
-      @query   = params[:query] || {}
-      @headers = normalize_headers params[:headers]
-      @method  = http_method_class_for method
-      @cookie  = params[:cookie]
+      @query   = query || {}
+      @headers = normalize_headers(headers)
+      @method  = HTTP_METHODS.fetch(method)
+      @cookie  = cookie
 
-      @body_data      = params[:body]
-      @multipart_data = params[:multipart]
-      @user_agent     = params[:user_agent]
-      @content_type   = params[:content_type] || default_content_type_for(method)
+      @body_data      = body
+      @multipart_data = multipart
+      @user_agent     = user_agent
+      @content_type   = content_type || default_content_type_for(method)
 
-      if params[:auth]
-        @login    = params[:auth].fetch(:login)
-        @password = params[:auth].fetch(:password)
+      if auth
+        @login    = auth.fetch(:login)
+        @password = auth.fetch(:password)
       end
 
       initialize_headers
@@ -46,7 +43,7 @@ class HTTPWrapper
     def normalize_headers(headers)
       normal_headers = {}
       headers&.each do |header, value|
-        normal_headers[normalize_header header] = value
+        normal_headers[normalize_header(header)] = value
       end
       normal_headers
     end
@@ -54,10 +51,6 @@ class HTTPWrapper
     def normalize_header(header)
       header = header.to_s.tr('_', '-') if header.is_a? Symbol
       header.downcase
-    end
-
-    def http_method_class_for(method)
-      Net::HTTP.const_get method.to_s.capitalize
     end
 
     def default_content_type_for(method)
@@ -76,45 +69,45 @@ class HTTPWrapper
     def merge_uri_query
       return if @query.empty?
 
-      original_query = @uri.query ? Util.query_to_hash(@uri.query) : {}
+      original_query = @uri.query ? URI.decode_www_form(@uri.query).to_h : {}
       merged_query = original_query.merge @query
-      @uri.query = Util.hash_to_query merged_query
+      @uri.query = URI.encode_www_form(merged_query)
     end
 
     def create_method_specific_request
       @request = @method.new @uri, @headers
-      set_body
-      set_basic_auth
+      apply_body
+      apply_basic_auth
       @request
     end
 
-    def set_body
+    def apply_body
       return unless @request.request_body_permitted?
 
       if @multipart_data
-        set_body_from_multipart_data
+        apply_multipart_body
       else
-        set_body_from_body_data
+        apply_regular_body
       end
     end
 
-    def set_body_from_multipart_data
-      convert_body_data_to_multipart_data if @body_data
+    def apply_multipart_body
+      merge_body_into_multipart if @body_data
       @request.set_form @multipart_data, MULTIPART_CONTENT_TYPE
     end
 
-    def convert_body_data_to_multipart_data
-      @body_data = Util.query_to_hash(@body_data) unless @body_data.is_a? Hash
+    def merge_body_into_multipart
+      @body_data = URI.decode_www_form(@body_data).to_h unless @body_data.is_a? Hash
       @body_data.each { |key, value| @multipart_data << [key.to_s, value.to_s] }
     end
 
-    def set_body_from_body_data
+    def apply_regular_body
       return unless @body_data
 
-      @request.body = @body_data.is_a?(Hash) ? Util.hash_to_query(@body_data) : @body_data
+      @request.body = @body_data.is_a?(Hash) ? URI.encode_www_form(@body_data) : @body_data
     end
 
-    def set_basic_auth
+    def apply_basic_auth
       return unless @login && @password
 
       @request.basic_auth @login, @password

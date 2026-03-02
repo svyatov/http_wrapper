@@ -1,9 +1,11 @@
-require:
+plugins:
   - 'rubocop-rspec'
   - 'rubocop-performance'
 
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
 
   DisplayCopNames: true
   DisplayStyleGuide: true
@@ -14,10 +16,13 @@ Layout/LineLength:
 
 Metrics/BlockLength:
   Exclude:
-    - 'spec/http_wrapper_spec.rb'
+    - 'spec/**/*'
 
 Metrics/MethodLength:
   Max: 15
+
+Metrics/ParameterLists:
+  CountKeywordArgs: false
 
 Style/Documentation:
   Enabled: false
@@ -25,17 +30,11 @@ Style/Documentation:
 Style/NumericPredicate:
   Enabled: false
 
-Style/HashEachMethods:
-  Enabled: true
-
-Style/HashTransformKeys:
-  Enabled: true
-
-Style/HashTransformValues:
-  Enabled: true
-
 RSpec/ExampleLength:
   Enabled: false
 
 RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/NoExpectationExample:
   Enabled: false

@@ -3,40 +3,51 @@
 require 'net/https'
 
 class HTTPWrapper
-  KNOWN_OPTIONS_KEYS = %i[timeout verify_cert logger max_redirects user_agent].freeze
+  HTTP_METHODS = {
+    get: Net::HTTP::Get,
+    post: Net::HTTP::Post,
+    put: Net::HTTP::Put,
+    delete: Net::HTTP::Delete
+  }.freeze
+
+  REQUEST_TYPES = %w[ajax json ajax_json].freeze
 
   attr_accessor :timeout, :verify_cert, :logger, :max_redirects, :user_agent
 
-  def initialize(options = {})
-    Util.validate_hash_keys options, KNOWN_OPTIONS_KEYS
-
-    @timeout       = options.fetch(:timeout) { 10 }
-    @verify_cert   = options.fetch(:verify_cert) { true }
-    @logger        = options.fetch(:logger) { nil }
-    @max_redirects = options.fetch(:max_redirects) { 10 }
-    @user_agent    = options.fetch(:user_agent) { USER_AGENT }
+  def initialize(timeout: 10, verify_cert: true, logger: nil, max_redirects: 10, user_agent: USER_AGENT)
+    @timeout       = timeout
+    @verify_cert   = verify_cert
+    @logger        = logger
+    @max_redirects = max_redirects
+    @user_agent    = user_agent
   end
 
   %i[get post put delete].each do |method_as_symbol|
-    define_method method_as_symbol do |url, params = {}|
-      params[:user_agent] ||= @user_agent
-      get_response Request.new(url, method_as_symbol, params)
+    define_method method_as_symbol do |url, headers: nil, query: nil, cookie: nil,
+                                          auth: nil, body: nil, user_agent: nil,
+                                          content_type: nil, multipart: nil|
+      user_agent ||= @user_agent
+      request = Request.new(url, method_as_symbol,
+                            headers:, query:, cookie:, auth:, body:,
+                            user_agent:, content_type:, multipart:)
+      perform_request(request)
     end
 
     method_as_string = method_as_symbol.to_s
 
-    %w[ajax json ajax_json].each do |request_type|
-      define_method "#{method_as_string}_#{request_type}" do |url, params = {}|
-        (params[:headers] ||= {}).merge!(headers_specific_for(request_type))
-        public_send method_as_symbol, url, params
+    REQUEST_TYPES.each do |request_type|
+      type_headers = HEADERS_FOR_REQUEST_TYPE.fetch(request_type)
+      define_method "#{method_as_string}_#{request_type}" do |url, **params|
+        params[:headers] = (params[:headers] || {}).merge(type_headers)
+        public_send(method_as_symbol, url, **params)
       end
     end
 
     alias_method "#{method_as_string}_json_ajax", "#{method_as_string}_ajax_json"
   end
 
-  def post_and_get_cookie(url, params = {})
-    response = post url, params
+  def post_and_get_cookie(url, **params)
+    response = post(url, **params)
     response['set-cookie']
   end
 
@@ -47,27 +58,24 @@ class HTTPWrapper
 
   private
 
-  def get_response(request, redirects_limit = @max_redirects)
+  def perform_request(request, redirects_limit = @max_redirects)
     raise TooManyRedirectsError, 'Too many redirects!' if redirects_limit == 0
 
     response = execute request.create, request.uri
 
     if response.is_a? Net::HTTPRedirection
       request.uri = response['location']
-      response = get_response request, redirects_limit - 1
+      response = perform_request request, redirects_limit - 1
     end
 
     response
   end
 
-  def headers_specific_for(request_type)
-    self.class.const_get "#{request_type.upcase}_HEADER"
-  end
-
   def create_connection(uri)
     connection = Net::HTTP.new uri.host, uri.port
-    connection.read_timeout = @timeout
-    connection.open_timeout = @timeout
+    connection.read_timeout  = @timeout
+    connection.open_timeout  = @timeout
+    connection.write_timeout = @timeout
 
     if uri.is_a? URI::HTTPS
       connection.use_ssl = true
