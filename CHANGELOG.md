@@ -1,162 +1,175 @@
 # Changelog
 
-## v4.0.0
+All notable changes to this project will be documented in this file.
 
-* dropped support for Ruby 2.3 and 2.4
-* added Ruby 2.7 to the TravisCI config
-* rubocop-performance gem added
-* rubocop rake task added to the default rake task
-* all development dependencies updated
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## v3.0.0
+## [Unreleased]
 
-* dropped support for Ruby 1.9-2.2 and Rubinius
-* rubocop and rubocop-spec gems added for better code quality
-* simplecov gem added to track test coverage
-* code refactoring due to all the changes above
+## [5.0.0] - 2026-03-02
 
-## v2.1.1
+### Changed
 
-* code refactoring
-* fixed `post_and_get_cookie` method (warning: HTTPResponse#response is obsolete)
-* `UnknownParameterError` renamed to `UnknownKeyError`
-* removed options and parameters validation code duplication
+- Minimum Ruby version raised from 2.5 to 3.2
+- CI migrated from Travis CI to GitHub Actions
+- RuboCop updated from 0.80 to 1.84 with `plugins:` syntax
+- SimpleCov updated from 0.17 to 0.22 with Codecov integration
+- All development dependencies updated to latest versions
+- Development dependencies moved from gemspec to Gemfile
+- `Hash[URI.decode_www_form query]` replaced with `URI.decode_www_form(query).to_h`
+- Gemspec `homepage` updated to HTTPS
+- Gemspec `files` modernized to `Dir['lib/**/*.rb']` pattern
+- CHANGELOG rewritten in Keep a Changelog format
 
-## v2.1.0
+### Removed
 
-* added ability to perform custom `Net::HTTP` requests
+- Travis CI configuration
+- Deprecated `spec.test_files` from gemspec
+- Support for Ruby < 3.2
 
-    ```ruby
-    http = HTTPWrapper.new
-    uri = URI 'http://example.com'
+### Added
 
-    # Ruby v2.0.0
-    request = Net::HTTP::Head.new uri
-    # Ruby v1.9.3
-    request = Net::HTTP::Head.new uri.request_uri
+- GitHub Actions CI workflow with Ruby head, 4.0, 3.4, 3.3, 3.2 matrix
+- Dependabot configuration for weekly bundler updates
+- Gemspec metadata: `rubygems_mfa_required`, `source_code_uri`, `changelog_uri`, `bug_tracker_uri`
+- `rubocop-performance` and `rubocop-rspec` plugins (updated)
+- `rspec_junit_formatter` and `simplecov_json_formatter` dependencies
+- CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md
+- GitHub issue templates (bug report, feature request)
+- GitHub pull request template
+- 1Password OTP integration for gem releases
 
-    http.execute request, uri
-    ```
+## [4.0.0]
 
-* added ability to upload files with `multipart/form-data` content type
+### Changed
 
-    ```ruby
-    http = HTTPWrapper.new
-    params = {
-      multipart: [
-        # ['file input field name', 'File instance or string', {filename: 'itsfile.jpg', content_type: '...'}]
-        # last element is optional
-        ['user_pic', File.open('user_pic.jpg')],
-        ['user_photo', File.read('user_photo.jpg'), {filename: 'photo.jpg'}],
-        # you can also specify other parameters
-        ['user_name', 'john griffin']
-      ],
-      # or you can specify other parameters in body section
-      # it will be merged with multipart data
-      body: {
-        user_age: 25
-      }
-    }
-    response = http.post some_url, params
-    ```
+- All development dependencies updated
 
-* fixed incorrect content type for `DELETE` request
-* default content type changed to `text/html`
-* added `:user_agent` and `:content_type` shortcuts
+### Removed
 
-    ```ruby
-    # you can specify now user agent like so:
-    http = HTTWrapper.new user_agent: 'custom user agent'
-    # - or -
-    http.user_agent = 'custom user agent'
-    http.get sample_url
-    # - or -
-    http.get sample_url, user_agent: 'custom user agent'
-    ```
+- Support for Ruby 2.3 and 2.4
 
-    ```ruby
-    # you can specify now content type like so:
-    http.get sample_url, content_type: 'text/html'
-    ```
+### Added
 
-* added ability to specify headers as symbols
+- Ruby 2.7 to the Travis CI config
+- `rubocop-performance` gem
+- RuboCop rake task added to the default rake task
 
-    ```ruby
-    http.get some_url, headers: {x_requested_with: 'XMLHttpRequest'}
-    # - the same as -
-    http.get some_url, headers: {'X-Requested-With' => 'XMLHttpRequest'}
-    ```
+## [3.0.0]
 
-* added ability to fix urls without scheme with default http scheme
+### Changed
 
-    ```ruby
-    http.get 'example.com'
-    # will correctly request http://example.com
-    ```
+- Code refactored for RuboCop compliance
 
-* added `:max_redirects` option to specify redirect following limits
-* added `:logger` option
+### Removed
 
-    ```ruby
-    log = Logger.new
-    http = HTTPWrapper.new logger: log
-    - or -
-    http.logger = $stdout
-    ```
+- Support for Ruby 1.9–2.2 and Rubinius
 
-* massive refactoring
-* `:ca_file` option removed
-* `:validate_ssl_cert` option renamed to `:verify_cert`
-* `soap` methods removed due to rare usage
-* `:method` key removed from params
-* `:params` key changed to `:query`
+### Added
 
-    ```ruby
-    http.get some_url, query: { user_id: 1, text: 'abcdefg' }
-    ```
+- `rubocop` and `rubocop-rspec` gems for code quality
+- `simplecov` gem for test coverage tracking
 
-* fixed bug with timeout - it should be set in seconds, not microseconds
+## [2.1.1]
 
-## v2.0.0
+### Changed
 
-* Gem rewritten completely and renamed to 'http_wrapper'
-* `#get_response` now simply `#get`
-* `#get_ajax_response` now `#get_ajax`
-* `#get_soap_response` now `#get_soap`
-* `#get_json_response` now `#get_json`
-* `#get_cookie` now `#post_and_get_cookie`
-* new methods `#post`, `#put`, `#delete`,
-* new methods `#get_ajax_json`, `#post_ajax_json`, `#put_ajax_json`, `#delete_ajax_json`
-* new methods `#post_[ajax|soap|json]`, `#put_[ajax|soap|json]`, `#delete_[ajax|soap|json]`
-* class constructor now use options hash as a parameter instead of separate parameters
+- `UnknownParameterError` renamed to `UnknownKeyError`
+- Removed options and parameters validation code duplication
 
-    ```ruby
-    # was
-    accessor = ResourceAccessor.new(5000, '/path/to/ca_file', true)
-    # now
-    http = HTTWrapper.new(timeout: 5000, ca_file: '/path/to/ca_file', validate_ssl_cert: true)
-    ```
+### Fixed
 
-* methods signature changed to `method(url, params)`
-* development gem dependencies reduced
-* tests rewritten completely using `webmock` gem
-* changelog order reversed
-* changelog file renamed to `CHANGELOG.md`
+- `post_and_get_cookie` method (warning: HTTPResponse#response is obsolete)
 
-## v1.1.1
+## [2.1.0]
 
-* Adding query parameter
-* Adding specs
+### Added
 
-## v1.1.0
+- Ability to perform custom `Net::HTTP` requests via `#execute`
+- File uploads with `multipart/form-data` content type
+- `:user_agent` and `:content_type` parameter shortcuts
+- Ability to specify headers as symbols
+- URL scheme auto-prefixing (`http://`) when missing
+- `:max_redirects` option for redirect limits
+- `:logger` option for request debugging
 
-* Write documentation
-* API change
+### Changed
 
-## v1.0.1
+- Default content type changed to `text/html`
+- `:params` key changed to `:query`
+- `:validate_ssl_cert` option renamed to `:verify_cert`
+- Massive refactoring
 
-* Bug fix
+### Removed
 
-## v1.0.0
+- `:ca_file` option
+- `soap` methods (rare usage)
+- `:method` key from params
 
-* Initial release
+### Fixed
+
+- Incorrect content type for `DELETE` request
+- Timeout should be set in seconds, not microseconds
+
+## [2.0.0]
+
+### Changed
+
+- Gem rewritten completely and renamed to `http_wrapper`
+- `#get_response` renamed to `#get`
+- `#get_ajax_response` renamed to `#get_ajax`
+- `#get_soap_response` renamed to `#get_soap`
+- `#get_json_response` renamed to `#get_json`
+- `#get_cookie` renamed to `#post_and_get_cookie`
+- Constructor uses options hash instead of separate parameters
+- Methods signature changed to `method(url, params)`
+- Tests rewritten completely using `webmock` gem
+- Development gem dependencies reduced
+
+### Added
+
+- `#post`, `#put`, `#delete` methods
+- `#get_ajax_json`, `#post_ajax_json`, `#put_ajax_json`, `#delete_ajax_json` methods
+- `#post_[ajax|soap|json]`, `#put_[ajax|soap|json]`, `#delete_[ajax|soap|json]` methods
+
+## [1.1.1]
+
+### Added
+
+- Query parameter support
+- Specs
+
+## [1.1.0]
+
+### Changed
+
+- API change
+
+### Added
+
+- Documentation
+
+## [1.0.1]
+
+### Fixed
+
+- Bug fix
+
+## [1.0.0]
+
+### Added
+
+- Initial release
+
+[Unreleased]: https://github.com/svyatov/http_wrapper/compare/v5.0.0...HEAD
+[5.0.0]: https://github.com/svyatov/http_wrapper/compare/v4.0.0...v5.0.0
+[4.0.0]: https://github.com/svyatov/http_wrapper/compare/v3.0.0...v4.0.0
+[3.0.0]: https://github.com/svyatov/http_wrapper/compare/v2.1.1...v3.0.0
+[2.1.1]: https://github.com/svyatov/http_wrapper/compare/v2.1.0...v2.1.1
+[2.1.0]: https://github.com/svyatov/http_wrapper/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/svyatov/http_wrapper/compare/v1.1.1...v2.0.0
+[1.1.1]: https://github.com/svyatov/http_wrapper/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/svyatov/http_wrapper/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/svyatov/http_wrapper/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/svyatov/http_wrapper/releases/tag/v1.0.0

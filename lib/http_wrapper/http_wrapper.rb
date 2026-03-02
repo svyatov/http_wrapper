@@ -4,16 +4,17 @@ require 'net/https'
 
 class HTTPWrapper
   KNOWN_OPTIONS_KEYS = %i[timeout verify_cert logger max_redirects user_agent].freeze
+  REQUEST_TYPES = %w[ajax json ajax_json].freeze
 
   attr_accessor :timeout, :verify_cert, :logger, :max_redirects, :user_agent
 
   def initialize(options = {})
     Util.validate_hash_keys options, KNOWN_OPTIONS_KEYS
 
-    @timeout       = options.fetch(:timeout) { 10 }
-    @verify_cert   = options.fetch(:verify_cert) { true }
-    @logger        = options.fetch(:logger) { nil }
-    @max_redirects = options.fetch(:max_redirects) { 10 }
+    @timeout       = options.fetch(:timeout, 10)
+    @verify_cert   = options.fetch(:verify_cert, true)
+    @logger        = options.fetch(:logger, nil)
+    @max_redirects = options.fetch(:max_redirects, 10)
     @user_agent    = options.fetch(:user_agent) { USER_AGENT }
   end
 
@@ -25,7 +26,7 @@ class HTTPWrapper
 
     method_as_string = method_as_symbol.to_s
 
-    %w[ajax json ajax_json].each do |request_type|
+    REQUEST_TYPES.each do |request_type|
       define_method "#{method_as_string}_#{request_type}" do |url, params = {}|
         (params[:headers] ||= {}).merge!(headers_specific_for(request_type))
         public_send method_as_symbol, url, params

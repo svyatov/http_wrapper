@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'spec_helper'
-
-require 'http_wrapper'
-
 RSpec.describe HTTPWrapper do
   subject(:http) { described_class.new }
 
@@ -65,7 +61,7 @@ RSpec.describe HTTPWrapper do
         WebMock.allow_net_connect!
         begin
           http.get 'localhost'
-        rescue StandardError # rubocop:disable Lint/SuppressedException
+        rescue StandardError
           # NOOP, rescue from "connection refused" and such
         end
         WebMock.disable_net_connect!
@@ -77,7 +73,7 @@ RSpec.describe HTTPWrapper do
     describe 'GET' do
       it 'adds http uri scheme if missing' do
         stub_get sample_url
-        http.get sample_url.gsub(%r{\Ahttp://}, '')
+        http.get sample_url.delete_prefix('http://')
       end
 
       it 'hits provided url with default content type' do

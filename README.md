@@ -1,14 +1,16 @@
 # http_wrapper
 
-[![Gem Version](https://badge.fury.io/rb/http_wrapper.svg)](https://badge.fury.io/rb/http_wrapper)
-[![Build Status](https://travis-ci.org/svyatov/http_wrapper.svg?branch=master)](https://travis-ci.org/svyatov/http_wrapper)
-[![Depfu](https://badges.depfu.com/badges/772e76ac2a71ed84291f452cd0e04b83/overview.svg)](https://depfu.com/github/svyatov/http_wrapper?project_id=6879)
-[![Maintainability](https://api.codeclimate.com/v1/badges/41f8e8c507907ea20e2b/maintainability)](https://codeclimate.com/github/svyatov/http_wrapper/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/41f8e8c507907ea20e2b/test_coverage)](https://codeclimate.com/github/svyatov/http_wrapper/test_coverage)
+[![Gem Version](https://img.shields.io/gem/v/http_wrapper.svg)](https://rubygems.org/gems/http_wrapper)
+[![CI](https://github.com/svyatov/http_wrapper/actions/workflows/main.yml/badge.svg)](https://github.com/svyatov/http_wrapper/actions/workflows/main.yml)
+[![Codecov](https://codecov.io/gh/svyatov/http_wrapper/graph/badge.svg)](https://codecov.io/gh/svyatov/http_wrapper)
 
 A simple wrapper around standard Ruby Net::HTTP library.
 
 If you need something more fully-featured you should use absolutely awesome [HTTP](https://github.com/httprb/http) gem. ([Why?](https://twin.github.io/httprb-is-great/))
+
+## Supported Ruby Versions
+
+- Ruby 3.2+
 
 ---
 
@@ -17,7 +19,7 @@ If you need something more fully-featured you should use absolutely awesome [HTT
 Add this line to your Gemfile:
 
 ```ruby
-gem 'http_wrapper', '~> 4.0'
+gem 'http_wrapper', '~> 5.0'
 ```
 
 And then execute:
@@ -315,8 +317,12 @@ If any unknown options or parameters found, it raises the `UnknownKeyError` exce
 
 ## Contributing
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for reporting vulnerabilities.

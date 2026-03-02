@@ -10,7 +10,7 @@ class HTTPWrapper
     end
 
     def self.query_to_hash(query)
-      Hash[URI.decode_www_form query]
+      URI.decode_www_form(query).to_h
     end
 
     def self.hash_to_query(hash)

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class HTTPWrapper
-  USER_AGENT = "HTTPWrapper/#{HTTPWrapper::VERSION}; Ruby/#{RUBY_VERSION}"
+  USER_AGENT = "HTTPWrapper/#{HTTPWrapper::VERSION}; Ruby/#{RUBY_VERSION}".freeze
 
   CONTENT_TYPE_HEADER_NAME = 'content-type'
   USER_AGENT_HEADER_NAME   = 'user-agent'
