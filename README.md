@@ -1,8 +1,4 @@
-# http_wrapper
-
-[![Gem Version](https://img.shields.io/gem/v/http_wrapper.svg)](https://rubygems.org/gems/http_wrapper)
-[![CI](https://github.com/svyatov/http_wrapper/actions/workflows/main.yml/badge.svg)](https://github.com/svyatov/http_wrapper/actions/workflows/main.yml)
-[![Codecov](https://codecov.io/gh/svyatov/http_wrapper/graph/badge.svg)](https://codecov.io/gh/svyatov/http_wrapper)
+# http_wrapper [![Gem Version](https://img.shields.io/gem/v/http_wrapper)](https://rubygems.org/gems/http_wrapper) [![Codecov](https://img.shields.io/codecov/c/github/svyatov/http_wrapper)](https://app.codecov.io/gh/svyatov/http_wrapper) [![CI](https://github.com/svyatov/http_wrapper/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/svyatov/http_wrapper/actions?query=workflow%3ACI)
 
 A simple wrapper around standard Ruby Net::HTTP library.
 
