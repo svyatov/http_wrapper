@@ -11,34 +11,24 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Changed
 
-- Minimum Ruby version raised from 2.5 to 3.2
-- CI migrated from Travis CI to GitHub Actions
-- RuboCop updated from 0.80 to 1.84 with `plugins:` syntax
-- SimpleCov updated from 0.17 to 0.22 with Codecov integration
-- All development dependencies updated to latest versions
-- Development dependencies moved from gemspec to Gemfile
-- `Hash[URI.decode_www_form query]` replaced with `URI.decode_www_form(query).to_h`
-- Gemspec `homepage` updated to HTTPS
-- Gemspec `files` modernized to `Dir['lib/**/*.rb']` pattern
-- CHANGELOG rewritten in Keep a Changelog format
+- **BREAKING:** Hash options replaced with keyword arguments across the entire public API
+  - `HTTPWrapper.new(options = {})` → `HTTPWrapper.new(timeout:, verify_cert:, logger:, max_redirects:, user_agent:)`
+  - All HTTP methods (`get`, `post`, `put`, `delete`) now accept keyword arguments instead of an options hash
+  - Type-specific methods (`get_ajax`, `post_json`, etc.) forward `**kwargs` to the base methods
+  - `post_and_get_cookie` accepts `**kwargs` forwarded to `post`
+- **BREAKING:** Minimum Ruby version raised from 2.5 to 3.2
+- `write_timeout` now set on HTTP connections (in addition to `read_timeout` and `open_timeout`)
 
 ### Removed
 
-- Travis CI configuration
-- Deprecated `spec.test_files` from gemspec
+- **BREAKING:** `UnknownKeyError` class (keyword arguments handle unknown key validation natively)
+- **BREAKING:** `Util` module (`validate_hash_keys`, `query_to_hash`, `hash_to_query`)
 - Support for Ruby < 3.2
 
 ### Added
 
-- GitHub Actions CI workflow with Ruby head, 4.0, 3.4, 3.3, 3.2 matrix
-- Dependabot configuration for weekly bundler updates
-- Gemspec metadata: `rubygems_mfa_required`, `source_code_uri`, `changelog_uri`, `bug_tracker_uri`
-- `rubocop-performance` and `rubocop-rspec` plugins (updated)
-- `rspec_junit_formatter` and `simplecov_json_formatter` dependencies
-- CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md
-- GitHub issue templates (bug report, feature request)
-- GitHub pull request template
-- 1Password OTP integration for gem releases
+- CI testing against Ruby head, 4.0, 3.4, 3.3, and 3.2
+- Integration test suite with live HTTP server for end-to-end coverage
 
 ## [4.0.0]
 
