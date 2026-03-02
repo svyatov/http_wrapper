@@ -13,3 +13,4 @@ gem 'rubocop-rspec', '~> 3.8'
 gem 'simplecov', '~> 0.22.0', require: false
 gem 'simplecov_json_formatter', '~> 0.1.4', require: false
 gem 'webmock', '~> 3.26'
+gem 'webrick', '~> 1.9'

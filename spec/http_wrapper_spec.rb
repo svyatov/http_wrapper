@@ -233,6 +233,47 @@ RSpec.describe HTTPWrapper do
       end
     end
 
+    describe 'PUT with body' do
+      it 'sends body with PUT request' do
+        stub_request(:put, sample_url).with(body: 'key=value')
+        http.put sample_url, body: { key: 'value' }
+      end
+    end
+
+    describe 'POST with string body' do
+      it 'sends string body as-is' do
+        json_body = '{"key":"value"}'
+        stub_post(sample_url, body: json_body)
+        http.post sample_url, body: json_body, content_type: 'application/json'
+      end
+    end
+
+    describe 'POST with multipart' do
+      it 'sends multipart form data' do
+        stub_request(:post, sample_url)
+          .with { |req| req.headers['Content-Type'].include?('multipart/form-data') }
+        http.post sample_url, multipart: [%w[field value]]
+      end
+
+      it 'merges hash body into multipart' do
+        request = HTTPWrapper::Request.new(sample_url, :post,
+                                           multipart: [%w[field value]], body: { extra: 'data' })
+        allow_any_instance_of(Net::HTTP::Post).to receive(:set_form).and_call_original # rubocop:disable RSpec/AnyInstance
+        net_request = request.create
+        expect(net_request).to have_received(:set_form)
+          .with([%w[field value], %w[extra data]], HTTPWrapper::MULTIPART_CONTENT_TYPE)
+      end
+
+      it 'merges string body into multipart via URI.decode_www_form' do
+        request = HTTPWrapper::Request.new(sample_url, :post,
+                                           multipart: [%w[field value]], body: 'extra=data')
+        allow_any_instance_of(Net::HTTP::Post).to receive(:set_form).and_call_original # rubocop:disable RSpec/AnyInstance
+        net_request = request.create
+        expect(net_request).to have_received(:set_form)
+          .with([%w[field value], %w[extra data]], HTTPWrapper::MULTIPART_CONTENT_TYPE)
+      end
+    end
+
     describe 'Custom request instance' do
       it 'performs request for custom Net::HTTP request instance' do
         stub_request :head, sample_url
@@ -243,12 +284,35 @@ RSpec.describe HTTPWrapper do
     end
   end
 
+  describe 'Constructor' do
+    it 'accepts all keyword arguments' do
+      wrapper = described_class.new(timeout: 5, verify_cert: false, max_redirects: 3)
+      expect(wrapper.timeout).to eq 5
+      expect(wrapper.verify_cert).to be false
+      expect(wrapper.max_redirects).to eq 3
+    end
+  end
+
   describe 'HTTPS' do
     let(:sample_url) { 'https://example.com' }
 
     it 'hits provided url with HTTPS protocol' do
       stub_get sample_url
       http.get sample_url
+    end
+
+    it 'sets VERIFY_NONE when verify_cert is false' do
+      wrapper = described_class.new(verify_cert: false)
+      connection = instance_double(Net::HTTP, 'read_timeout=': nil, 'open_timeout=': nil,
+                                              'write_timeout=': nil, 'use_ssl=': nil,
+                                              'verify_mode=': nil, set_debug_output: nil)
+      allow(Net::HTTP).to receive(:new).and_return(connection)
+      allow(connection).to receive(:request).and_return(Net::HTTPResponse.new('1.1', '200', 'OK'))
+
+      stub_get sample_url
+      wrapper.get sample_url
+
+      expect(connection).to have_received(:verify_mode=).with(OpenSSL::SSL::VERIFY_NONE)
     end
   end
 end
