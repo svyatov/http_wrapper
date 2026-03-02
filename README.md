@@ -224,8 +224,6 @@ Default content type header for these requests is `application/x-www-form-urlenc
 
 So for `get_ajax` there are `post_ajax`, `put_ajax` and `delete_ajax`.
 
-For `get_soap` there are `post_soap`, `put_soap` and `delete_soap`.
-
 For `get_json` there are `post_json`, `put_json` and `delete_json`.
 
 And for `get_ajax_json`, there are `post_ajax_json`, `put_ajax_json` and `delete_ajax_json`.
@@ -233,7 +231,7 @@ And for `get_ajax_json`, there are `post_ajax_json`, `put_ajax_json` and `delete
 ### Change User Agent
 
 ```ruby
-http = HTTWrapper.new user_agent: 'custom user agent'
+http = HTTPWrapper.new user_agent: 'custom user agent'
 # - or -
 http.user_agent = 'custom user agent'
 http.get sample_url
@@ -313,7 +311,7 @@ http.execute request, uri
 ```
 
 Don't worry if you mistype root parameters key. `http_wrapper` checks root parameters keys and instantiation options keys.
-If any unknown options or parameters found, it raises the `UnknownKeyError` exception.
+If any unknown options or parameters found, it raises an `ArgumentError` exception.
 
 ## Contributing
 
