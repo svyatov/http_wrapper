@@ -6,7 +6,4 @@ class HTTPWrapper
 
   class TooManyRedirectsError < Error
   end
-
-  class UnknownKeyError < Error
-  end
 end

@@ -20,16 +20,16 @@ RSpec.describe HTTPWrapper do
     let(:sample_url) { 'http://example.com' }
 
     describe 'Options' do
-      it 'raises UnknownParameterError if initial options key is unknown' do
+      it 'raises ArgumentError if initial options key is unknown' do
         expect do
-          described_class.new unknown_option: 'test', maybe_this_known: '?'
-        end.to raise_error HTTPWrapper::UnknownKeyError, 'Unknown keys: unknown_option, maybe_this_known'
+          described_class.new(unknown_option: 'test')
+        end.to raise_error ArgumentError
       end
 
-      it 'raises UnknownParameterError if params key is unknown' do
+      it 'raises ArgumentError if params key is unknown' do
         expect do
-          http.get sample_url, unknown_param_key: 'test', another_param_key: 'wow'
-        end.to raise_error HTTPWrapper::UnknownKeyError, 'Unknown keys: unknown_param_key, another_param_key'
+          http.get sample_url, unknown_param_key: 'test'
+        end.to raise_error ArgumentError
       end
 
       it 'follows redirects no more then 10 times by default' do
@@ -77,22 +77,21 @@ RSpec.describe HTTPWrapper do
       end
 
       it 'hits provided url with default content type' do
-        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::DEFAULT_CONTENT_TYPE } }
-        stub_get sample_url, params
+        stub_get sample_url, headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::DEFAULT_CONTENT_TYPE }
         http.get sample_url
       end
 
       it 'sets content type if provided' do
-        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' } }
-        stub_get sample_url, params
-        http.get sample_url, params
+        stub_get sample_url, headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' }
+        http.get sample_url, headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' }
         http.get sample_url, content_type: 'Custom Content Type'
-        http.get sample_url, params.merge(content_type: 'Should Be Overwritten')
+        http.get sample_url,
+                 headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' },
+                 content_type: 'Should Be Overwritten'
       end
 
       it 'sets proper header for JSON requests' do
-        params = { headers: HTTPWrapper::JSON_HEADER }
-        stub_get sample_url, params
+        stub_get sample_url, headers: HTTPWrapper::JSON_HEADER
         http.get_json sample_url
       end
 
@@ -107,8 +106,7 @@ RSpec.describe HTTPWrapper do
       end
 
       it 'sets proper headers for AJAX-JSON requests' do
-        params = { headers: HTTPWrapper::AJAX_JSON_HEADER }
-        stub_get sample_url, params
+        stub_get sample_url, headers: HTTPWrapper::AJAX_JSON_HEADER
         http.get_ajax_json sample_url
       end
 
@@ -118,16 +116,14 @@ RSpec.describe HTTPWrapper do
       end
 
       it 'sets default user agent' do
-        params = { headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => HTTPWrapper::USER_AGENT } }
-        stub_get sample_url, params
+        stub_get sample_url, headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => HTTPWrapper::USER_AGENT }
         http.get sample_url
       end
 
       it 'changes user agent if provided' do
         custom_user_agent = 'Mozilla v1.2.3'
-        params = { headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => custom_user_agent } }
-        stub_get sample_url, params
-        http.get sample_url, params
+        stub_get sample_url, headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => custom_user_agent }
+        http.get sample_url, headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => custom_user_agent }
 
         http.get sample_url, user_agent: custom_user_agent
 
@@ -145,25 +141,22 @@ RSpec.describe HTTPWrapper do
       end
 
       it 'precedences header user agent before params' do
-        params = { headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => 'TestUserAgent' } }
-        stub_get sample_url, params
+        stub_get sample_url, headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => 'TestUserAgent' }
 
         http.user_agent = 'Should Be Overwritten'
-        http.get sample_url, params
+        http.get sample_url, headers: { HTTPWrapper::USER_AGENT_HEADER_NAME => 'TestUserAgent' }
       end
 
       it 'sends cookie if provided' do
         cookie_value = 'some cookie'
-        params = { headers: { 'Cookie' => cookie_value } }
-        stub_get sample_url, params
+        stub_get sample_url, headers: { 'Cookie' => cookie_value }
         http.get sample_url, cookie: cookie_value
-        http.get sample_url, params
+        http.get sample_url, headers: { 'Cookie' => cookie_value }
       end
 
       it 'uses headers cookie if both (headers and parameters) cookies provided' do
-        params = { headers: { 'Cookie' => 'Custom cookie' } }
-        stub_get sample_url, params
-        http.get sample_url, params.merge(cookie: 'should not use this one')
+        stub_get sample_url, headers: { 'Cookie' => 'Custom cookie' }
+        http.get sample_url, headers: { 'Cookie' => 'Custom cookie' }, cookie: 'should not use this one'
       end
 
       it 'hits provided url with basic auth' do
@@ -185,22 +178,20 @@ RSpec.describe HTTPWrapper do
 
     describe 'POST' do
       it 'sets content type if provided' do
-        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' } }
-        stub_post sample_url, params
-        http.post sample_url, params
+        stub_post sample_url, headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' }
+        http.post sample_url, headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => 'Custom Content Type' }
       end
 
       it 'returns cookies after post' do
         cookie_value = 'some cookie'
-        params = { body: { username: 'test', password: 'test' } }
-        stub_post(sample_url, params).to_return(headers: { 'Set-Cookie' => cookie_value })
-        cookie = http.post_and_get_cookie sample_url, params
+        stub_post(sample_url, body: 'username=test&password=test')
+          .to_return(headers: { 'Set-Cookie' => cookie_value })
+        cookie = http.post_and_get_cookie sample_url, body: { username: 'test', password: 'test' }
         expect(cookie).to eq cookie_value
       end
 
       it 'hits provided url with default content type' do
-        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::POST_CONTENT_TYPE } }
-        stub_post sample_url, params
+        stub_post sample_url, headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::POST_CONTENT_TYPE }
         http.post sample_url
       end
 
@@ -230,16 +221,14 @@ RSpec.describe HTTPWrapper do
 
     describe 'PUT' do
       it 'hits provided url with default content type' do
-        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::POST_CONTENT_TYPE } }
-        stub_put sample_url, params
+        stub_put sample_url, headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::POST_CONTENT_TYPE }
         http.put sample_url
       end
     end
 
     describe 'DELETE' do
       it 'hits provided url with default content type' do
-        params = { headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::DEFAULT_CONTENT_TYPE } }
-        stub_delete sample_url, params
+        stub_delete sample_url, headers: { HTTPWrapper::CONTENT_TYPE_HEADER_NAME => HTTPWrapper::DEFAULT_CONTENT_TYPE }
         http.delete sample_url
       end
     end

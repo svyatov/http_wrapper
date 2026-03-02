@@ -15,5 +15,11 @@ class HTTPWrapper
 
   AJAX_HEADER = { AJAX_HEADER_NAME => 'XMLHttpRequest' }.freeze
   JSON_HEADER = { CONTENT_TYPE_HEADER_NAME => JSON_CONTENT_TYPE }.freeze
-  AJAX_JSON_HEADER = AJAX_HEADER.dup.merge!(JSON_HEADER).freeze
+  AJAX_JSON_HEADER = AJAX_HEADER.merge(JSON_HEADER).freeze
+
+  HEADERS_FOR_REQUEST_TYPE = {
+    'ajax' => AJAX_HEADER,
+    'json' => JSON_HEADER,
+    'ajax_json' => AJAX_JSON_HEADER
+  }.freeze
 end
